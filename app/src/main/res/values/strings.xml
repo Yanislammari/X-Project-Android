@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">X-Project-Android</string>
+    <string name="login_screen_email_placeholder">Email</string>
+    <string name="login_screen_title">Login</string>
+    <string name="login_screen_placeholder_passwd">Password</string>
+    <string name="login_screen_goto_register">Not registered? Sign up here</string>
 </resources>
