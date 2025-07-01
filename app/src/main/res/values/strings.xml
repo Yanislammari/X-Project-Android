@@ -4,4 +4,15 @@
     <string name="login_screen_title">Login</string>
     <string name="login_screen_placeholder_passwd">Password</string>
     <string name="login_screen_goto_register">Not registered? Sign up here</string>
+    <string name="bio_desc_screen_title">Describe yourself</string>
+    <string name="bio_desc_screen_button">Validate</string>
+    <string name="bio_desc_screen_placeholder_pseudo">Pseudo</string>
+    <string name="bio_desc_screen_placeholder_bio">Bio</string>
+    <string name="registerviewmodel_error">Please fill out all fields</string>
+    <string name="registerviewmodel_error_no_image">An image is required</string>
+    <string name="pickimagescreen_button">Validate</string>
+    <string name="pickimagescreen_photo_button">Photo</string>
+    <string name="pickimagescreen_gallery_button">Gallery</string>
+    <string name="pickimagescreen_iùage_description">Selected image</string>
+    <string name="pickimagescreen_title">Pick Image</string>
 </resources>
