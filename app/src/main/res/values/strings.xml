@@ -15,4 +15,14 @@
     <string name="pickimagescreen_gallery_button">Gallery</string>
     <string name="pickimagescreen_iùage_description">Selected image</string>
     <string name="pickimagescreen_title">Pick Image</string>
+    <string name="choseemailscreen_placeholder_email">xyz@domain.com</string>
+    <string name="choseemailscreen_button">Validate</string>
+    <string name="choseemailscreen_title">Chose your email</string>
+    <string name="registerviewmodel_error_email_empty">Email is required</string>
+    <string name="registerviewmodel_error_wrongly_format">Wrongly format</string>
+    <string name="passwordscreen_title">Chose your password</string>
+    <string name="passwordscreen_placeholder_password">a1xZ@</string>
+    <string name="registerviewmodel_error_passwords_empty">Both field are required</string>
+    <string name="registerviewmodel_error_password_unmatch">Password must match</string>
+    <string name="passwordscreen_placeholder_confirm_passwd">Confirm password</string>
 </resources>

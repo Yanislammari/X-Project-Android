@@ -8,6 +8,10 @@ import com.example.x_project_android.R
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 
+fun String.isEmail(): Boolean {
+    return android.util.Patterns.EMAIL_ADDRESS.matcher(this).matches()
+}
+
 class RegisterViewModel : ViewModel() {
 
     private val _uiEvent = Channel<RegisterUIEvent>()
@@ -31,7 +35,6 @@ class RegisterViewModel : ViewModel() {
     private var _confirmPassword = mutableStateOf("")
     val confirmPassword: State<String> get() = _confirmPassword
 
-    // Public setters
     fun setBio(newBio: String) {
         if (newBio.length <= 250) {
             _bio.value = newBio
@@ -46,9 +49,33 @@ class RegisterViewModel : ViewModel() {
         _imageUri.value = uri
     }
 
-    fun setEmail(newEmail: String) { _email.value = newEmail }
-    fun setPassword(newPassword: String) { _password.value = newPassword }
-    fun setConfirmPassword(newConfirmPassword: String) { _confirmPassword.value = newConfirmPassword }
+    fun setEmail(newEmail: String) {
+        if (newEmail.length <= 1000) {
+            _email.value = newEmail
+        }
+    }
+    fun setPassword(newPassword: String) {
+        if (newPassword.length <= 1000) {
+            _password.value = newPassword
+        }
+    }
+    fun setConfirmPassword(newConfirmPassword: String) {
+        if (newConfirmPassword.length <= 1000) {
+            _confirmPassword.value = newConfirmPassword
+        }
+    }
+
+    fun goToPassword(){
+        if(_email.value.isNotBlank() && _email.value.isEmail()){
+            _uiEvent.trySend(RegisterUIEvent.NavigateTo)
+        }
+        else if(_email.value.isBlank()){
+            _uiEvent.trySend(RegisterUIEvent.ShowError(R.string.registerviewmodel_error_email_empty))
+        }
+        else{
+            _uiEvent.trySend(RegisterUIEvent.ShowError(R.string.registerviewmodel_error_wrongly_format))
+        }
+    }
 
     fun goToImage() {
         if (_pseudo.value.isNotBlank() && _bio.value.isNotBlank()) {
@@ -64,6 +91,16 @@ class RegisterViewModel : ViewModel() {
         } else {
             _uiEvent.trySend(RegisterUIEvent.ShowError(R.string.registerviewmodel_error_no_image))
         }
+    }
+    
+    fun tryRegister(){
+        if(_password.value.isBlank() || _confirmPassword.value.isBlank()){
+            _uiEvent.trySend(RegisterUIEvent.ShowError(R.string.registerviewmodel_error_passwords_empty))
+        }
+        else if(_password.value != _confirmPassword.value){
+            _uiEvent.trySend(RegisterUIEvent.ShowError(R.string.registerviewmodel_error_password_unmatch))
+        }
+        _uiEvent.trySend(RegisterUIEvent.NavigateTo)
     }
 }
 

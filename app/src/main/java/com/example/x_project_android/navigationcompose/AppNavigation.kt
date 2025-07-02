@@ -8,6 +8,7 @@ import com.example.x_project_android.view.LoginView
 import com.example.x_project_android.view.register.BioDescScreen
 import com.example.x_project_android.view.register.PickImageScreen
 import com.example.x_project_android.view.register.ChoseEmailScreen
+import com.example.x_project_android.view.register.PasswordScreen
 import com.example.x_project_android.viewmodels.LoginViewModel
 import com.example.x_project_android.viewmodels.RegisterViewModel
 
@@ -29,6 +30,9 @@ fun AppNavigation(
         }
         composable("register/email"){
             ChoseEmailScreen(registerViewModel,navHostController)
+        }
+        composable("register/password") {
+            PasswordScreen(registerViewModel,navHostController)
         }
     }
 }
