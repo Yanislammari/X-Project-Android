@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.x_project_android.R
 import com.example.x_project_android.ui.theme.AppTheme
-import com.example.x_project_android.utils.DisplayRoundImage
+import com.example.x_project_android.view.compose.DisplayRoundImage
 import com.example.x_project_android.utils.createImageUri
 import com.example.x_project_android.viewmodels.RegisterUIEvent
 import com.example.x_project_android.viewmodels.RegisterViewModel
@@ -49,6 +49,19 @@ fun PickImageScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         registerViewModel.setImageUri(uri)
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            val uri = createImageUri(context)
+            photoUri.value = uri
+            cameraLauncher.launch(uri)
+        } else {
+            Toast.makeText(context,
+                context.getString(R.string.pickimagescreen_permission_denied_error), Toast.LENGTH_SHORT).show()
+        }
     }
 
 
@@ -95,7 +108,8 @@ fun PickImageScreen(
 
 
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
@@ -110,9 +124,14 @@ fun PickImageScreen(
                 }
                 Button(
                     onClick = {
-                        val uri = createImageUri(context)   // Create new Uri here
-                        photoUri.value = uri                 // Save it to state
-                        cameraLauncher.launch(uri)           // Launch camera with this Uri
+                        val permission = android.Manifest.permission.CAMERA
+                        if (context.checkSelfPermission(permission) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                            val uri = createImageUri(context)
+                            photoUri.value = uri
+                            cameraLauncher.launch(uri)
+                        } else {
+                            cameraPermissionLauncher.launch(permission)
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     modifier = Modifier
@@ -124,7 +143,8 @@ fun PickImageScreen(
             }
             Button(
                 onClick = {registerViewModel.goToEmail()},
-                modifier = Modifier.fillMaxWidth(0.75f)
+                modifier = Modifier
+                    .fillMaxWidth(0.75f)
                     .padding(top = 16.dp),
             ) {
                 Text(text = stringResource(R.string.pickimagescreen_button))

@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.x_project_android.R
+import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.viewmodels.RegisterUIEvent
 import com.example.x_project_android.viewmodels.RegisterViewModel
 
@@ -30,7 +31,7 @@ import com.example.x_project_android.viewmodels.RegisterViewModel
 fun PasswordScreen(
     registerViewModel: RegisterViewModel,
     navHostController: NavHostController
-){
+) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         registerViewModel.uiEvent.collect { event ->
@@ -38,6 +39,7 @@ fun PasswordScreen(
                 is RegisterUIEvent.NavigateTo -> {
                     navHostController.navigate("register/password")
                 }
+
                 is RegisterUIEvent.ShowError -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
@@ -51,49 +53,70 @@ fun PasswordScreen(
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-        ){
+        ) {
             Text(
                 text = stringResource(R.string.passwordscreen_title),
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            OutlinedTextField(
-                value = registerViewModel.password.value,
-                onValueChange = { registerViewModel.setPassword(it) },
-                label = { Text(stringResource(R.string.passwordscreen_placeholder_password)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                visualTransformation = PasswordVisualTransformation(),
-                shape = RoundedCornerShape(16.dp),
-                singleLine = true,
-            )
-
-            OutlinedTextField(
-                value = registerViewModel.confirmPassword.value,
-                onValueChange = { registerViewModel.setConfirmPassword(it) },
-                label = { Text(stringResource(R.string.passwordscreen_placeholder_confirm_passwd))},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                visualTransformation = PasswordVisualTransformation(),
-                shape = RoundedCornerShape(16.dp),
-                singleLine = true,
-            )
-
-            Button(
-                onClick = {
-                    registerViewModel.tryRegister()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp, bottom = 8.dp)
-            ) {
-                Text(stringResource(R.string.choseemailscreen_button))
+            if (registerViewModel.isLoading.value) {
+                DisplayLoader()
+            } else {
+                PasswordForm(
+                    password = registerViewModel.password.value,
+                    confirmPassword = registerViewModel.confirmPassword.value,
+                    onPasswordChange = registerViewModel::setPassword,
+                    onConfirmPasswordChange = registerViewModel::setConfirmPassword,
+                    onSubmit = registerViewModel::tryRegister
+                )
             }
+        }
+    }
+}
+
+@Composable
+fun PasswordForm(
+    password: String,
+    confirmPassword: String,
+    onPasswordChange: (String) -> Unit,
+    onConfirmPasswordChange: (String) -> Unit,
+    onSubmit: () -> Unit
+) {
+    Column {
+        OutlinedTextField(
+            value = password,
+            onValueChange = onPasswordChange,
+            label = { Text(stringResource(R.string.passwordscreen_placeholder_password)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            visualTransformation = PasswordVisualTransformation(),
+            shape = RoundedCornerShape(16.dp),
+            singleLine = true,
+        )
+
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = onConfirmPasswordChange,
+            label = { Text(stringResource(R.string.passwordscreen_placeholder_confirm_passwd)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            visualTransformation = PasswordVisualTransformation(),
+            shape = RoundedCornerShape(16.dp),
+            singleLine = true,
+        )
+
+        Button(
+            onClick = onSubmit,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, bottom = 8.dp)
+        ) {
+            Text(stringResource(R.string.choseemailscreen_button))
         }
     }
 }

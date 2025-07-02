@@ -1,4 +1,4 @@
-package com.example.x_project_android.utils
+package com.example.x_project_android.view.compose
 
 import android.net.Uri
 import androidx.compose.foundation.background

@@ -5,6 +5,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.x_project_android.R
+import com.example.x_project_android.data.dto.UserRegistrationDto
+import com.google.gson.Gson
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 
@@ -16,6 +18,9 @@ class RegisterViewModel : ViewModel() {
 
     private val _uiEvent = Channel<RegisterUIEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
+
+    private val _isLoading = mutableStateOf(false)
+    val isLoading: State<Boolean> = _isLoading
 
     private var _bio = mutableStateOf("")
     val bio: State<String> get() = _bio
@@ -100,7 +105,15 @@ class RegisterViewModel : ViewModel() {
         else if(_password.value != _confirmPassword.value){
             _uiEvent.trySend(RegisterUIEvent.ShowError(R.string.registerviewmodel_error_password_unmatch))
         }
-        _uiEvent.trySend(RegisterUIEvent.NavigateTo)
+        val json = Gson().toJson(UserRegistrationDto(
+            bio = _bio.value,
+            pseudo = _pseudo.value,
+            imageUri = _imageUri.value?.toString(),
+            email = _email.value,
+            password = _password.value,
+        ))
+        println(json)
+        _isLoading.value = true
     }
 }
 

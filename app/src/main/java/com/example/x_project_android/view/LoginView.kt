@@ -48,7 +48,7 @@ fun LoginView(
                 shape = RoundedCornerShape(16.dp),
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email)
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = viewModel.onGetPassword(),
                 onValueChange = { viewModel.onSetPassword(it) },
@@ -64,10 +64,10 @@ fun LoginView(
                     Toast.makeText(context, "Login request sent!", Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 16.dp),
             ) {
                 Text("Login")
             }
-            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = stringResource(R.string.login_screen_goto_register),
                 modifier = Modifier.clickable {
