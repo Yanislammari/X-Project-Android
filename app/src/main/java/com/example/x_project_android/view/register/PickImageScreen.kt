@@ -5,7 +5,6 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -110,7 +109,11 @@ fun PickImageScreen(
                     Text(text = stringResource(R.string.pickimagescreen_gallery_button))
                 }
                 Button(
-                    onClick = { cameraLauncher.launch(createImageUri(context)) },
+                    onClick = {
+                        val uri = createImageUri(context)   // Create new Uri here
+                        photoUri.value = uri                 // Save it to state
+                        cameraLauncher.launch(uri)           // Launch camera with this Uri
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     modifier = Modifier
                         .weight(1f)

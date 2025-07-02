@@ -1,12 +1,8 @@
 package com.example.x_project_android.viewmodels
 
-import android.graphics.Bitmap
-import android.media.Image
 import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.ViewModel
 import com.example.x_project_android.R
 import kotlinx.coroutines.channels.Channel
