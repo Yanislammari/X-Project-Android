@@ -1,7 +1,6 @@
 package com.example.x_project_android.view
 
 import android.annotation.SuppressLint
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,7 +17,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.x_project_android.R
+import com.example.x_project_android.navigationcompose.navigateDeleteAllRoute
 import com.example.x_project_android.ui.theme.AppTheme
+import com.example.x_project_android.view.compose.navbar.TweetScreenDest
 import com.example.x_project_android.viewmodels.LoginViewModel
 
 @Composable
@@ -61,7 +62,7 @@ fun LoginView(
             Button(
                 onClick = {
                     viewModel.sendLoginRequest()
-                    Toast.makeText(context, "Login request sent!", Toast.LENGTH_SHORT).show()
+                    navHostController.navigateDeleteAllRoute("home")
                 },
                 modifier = Modifier.fillMaxWidth()
                     .padding(top = 16.dp, bottom = 16.dp),

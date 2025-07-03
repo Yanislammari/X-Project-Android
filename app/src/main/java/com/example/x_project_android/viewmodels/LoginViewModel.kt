@@ -31,8 +31,4 @@ class LoginViewModel : ViewModel() {
     fun sendLoginRequest() {
         // Use email and password
     }
-
-    fun goToRegister() {
-        // Logic to navigate to the registration screen
-    }
 }

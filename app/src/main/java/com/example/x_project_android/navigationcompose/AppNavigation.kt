@@ -1,38 +1,38 @@
 package com.example.x_project_android.navigationcompose
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.x_project_android.view.LoginView
-import com.example.x_project_android.view.register.BioDescScreen
-import com.example.x_project_android.view.register.PickImageScreen
-import com.example.x_project_android.view.register.ChoseEmailScreen
-import com.example.x_project_android.view.register.PasswordScreen
-import com.example.x_project_android.viewmodels.LoginViewModel
-import com.example.x_project_android.viewmodels.RegisterViewModel
+import com.example.x_project_android.view.compose.navbar.SubscribeScreenDest
+import com.example.x_project_android.view.compose.navbar.TweetScreenDest
+import com.example.x_project_android.view.subscribe.SubscribeScreen
+import com.example.x_project_android.view.tweet.TweetScreen
 
 @Composable
 fun AppNavigation(
-    navHostController : NavHostController,
-    loginViewModel: LoginViewModel,
-    registerViewModel: RegisterViewModel,
+    navHostController: NavHostController,
+    modifier: Modifier = Modifier,
 ){
-    NavHost(navController = navHostController, startDestination = "login"){
-        composable("login"){
-            LoginView(loginViewModel,navHostController)
-        }
-        composable("register") {
-            BioDescScreen(registerViewModel,navHostController)
-        }
-        composable("register/image_screen"){
-            PickImageScreen(registerViewModel, navHostController)
-        }
-        composable("register/email"){
-            ChoseEmailScreen(registerViewModel,navHostController)
-        }
-        composable("register/password") {
-            PasswordScreen(registerViewModel,navHostController)
-        }
+    NavHost(
+        modifier = modifier,
+        navController = navHostController,
+        startDestination = TweetScreenDest.route,
+    ) {
+        composable(TweetScreenDest.route) { TweetScreen(navHostController) }
+        composable(SubscribeScreenDest.route) { SubscribeScreen(navHostController) }
     }
 }
+
+fun NavHostController.navigateSingleToTop(route: String) =
+    this.navigate(route) {
+        popUpTo(
+            this@navigateSingleToTop.graph.findStartDestination().id
+        ) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
