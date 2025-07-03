@@ -2,6 +2,8 @@ package com.example.x_project_android.navigationcompose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -10,6 +12,7 @@ import com.example.x_project_android.view.compose.navbar.SubscribeScreenDest
 import com.example.x_project_android.view.compose.navbar.TweetScreenDest
 import com.example.x_project_android.view.subscribe.SubscribeScreen
 import com.example.x_project_android.view.tweet.TweetScreen
+import com.example.x_project_android.viewmodels.tweet.TweetsViewModel
 
 @Composable
 fun AppNavigation(
@@ -21,7 +24,10 @@ fun AppNavigation(
         navController = navHostController,
         startDestination = TweetScreenDest.route,
     ) {
-        composable(TweetScreenDest.route) { TweetScreen(navHostController) }
+        composable(TweetScreenDest.route) {
+            val tweetsViewModel:TweetsViewModel = viewModel()
+            TweetScreen(navHostController,tweetsViewModel)
+        }
         composable(SubscribeScreenDest.route) { SubscribeScreen(navHostController) }
     }
 }

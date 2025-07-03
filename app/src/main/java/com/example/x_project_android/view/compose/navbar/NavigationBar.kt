@@ -15,7 +15,7 @@ import com.example.x_project_android.view.compose.navbar.BasicAppDestination
 import com.example.x_project_android.view.compose.navbar.TweetScreenDest
 import com.example.x_project_android.view.compose.navbar.navTabs
 
-private var TabHeight = 56.dp
+private var TabHeight = 35.dp
 
 @Composable
 fun BasicNavBar(
@@ -51,8 +51,7 @@ fun BasicNavTab(
 ) {
     val tabTintColor = if(selected) MaterialTheme.colorScheme.primary else Color.Gray
     Column(
-        modifier = Modifier.padding(16.dp)
-            .height(TabHeight)
+        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
             .selectable(
                 selected = selected,
                 onClick = onSelected,
@@ -61,8 +60,6 @@ fun BasicNavTab(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(imageVector = icon, contentDescription = "", tint = tabTintColor)
-
-        Spacer(Modifier.height(12.dp))
 
         Text(title, style = MaterialTheme.typography.bodyMedium)
     }

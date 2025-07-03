@@ -26,4 +26,10 @@
     <string name="registerviewmodel_error_password_unmatch">Password must match</string>
     <string name="passwordscreen_placeholder_confirm_passwd">Confirm password</string>
     <string name="pickimagescreen_permission_denied_error">This function require photo access right. Change that in settings</string>
+    <string name="tweetscreen_placeholder_search">Search</string>
+    <string name="tweetscreen_text_dislike">Dislike</string>
+    <string name="tweetscreen_text_like">Like</string>
+    <string name="tweetscreen_texttime_error">Unknown time</string>
+    <string name="tweetscreen_image_content_desc">Profile Image</string>
+    <string name="tweetscreen_description_tweet_image">Tweet Image</string>
 </resources>
