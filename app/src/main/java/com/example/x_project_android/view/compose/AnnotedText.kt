@@ -9,7 +9,7 @@ import androidx.compose.ui.text.withStyle
 import com.example.x_project_android.utils.reduceText
 
 fun buildHighlightedText(text: String?, query: String, highlightColor : Color): AnnotatedString {
-    val content = reduceText(text,100,"No content available")
+    val content = reduceText(text,350,"No content available")
     if (query.isBlank()) return AnnotatedString(content)
 
     val lowerContent = content.lowercase()

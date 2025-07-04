@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -62,13 +63,14 @@ fun TweetScreen(
         tweetsViewModel.fetchTweets()
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .pointerInput(Unit) {
-            detectTapGestures(onTap = {
-                focusManager.clearFocus()
-            })
-        }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            }
     ) {
         SimpleSearchBar(
             query = tweetsViewModel.searchText.value,
@@ -122,36 +124,31 @@ fun TweetCell(
         modifier = Modifier
             .padding(8.dp)
             .background(MaterialTheme.colorScheme.surface)
-            .clip(RoundedCornerShape(16.dp))  // round corners here
-            .background(MaterialTheme.colorScheme.surface)
+            .clip(RoundedCornerShape(16.dp))
     ) {
-        // Put image at the top if exists
         if (tweet.imageUri != null) {
             AsyncImage(
                 model = tweet.imageUri,
                 contentDescription = stringResource(R.string.tweetscreen_description_tweet_image),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 100.dp, max = 300.dp)
+                    .height(150.dp)
                     .background(Color.Gray),
                 contentScale = ContentScale.Crop
             )
         }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFFF0F0F0)) // light gray background behind text & user info
-                .padding(8.dp)
-        ) {
-            DisplayPseudo(tweet, tweet.user)
-            Text(
-                text = buildHighlightedText(tweet.content, tweetsViewModel.searchText.value, MaterialTheme.colorScheme.primary),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = 16.dp,top = 4.dp),
-                overflow = TextOverflow.Ellipsis
-            )
-            LikesDislikesRow(tweet, onLike, onDislike)
-        }
+        DisplayPseudo(tweet, tweet.user)
+        Text(
+            text = buildHighlightedText(
+                tweet.content,
+                tweetsViewModel.searchText.value,
+                MaterialTheme.colorScheme.primary
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = 16.dp, top = 4.dp),
+            overflow = TextOverflow.Ellipsis
+        )
+        LikesDislikesRow(tweet, onLike, onDislike)
     }
 }
 
@@ -186,7 +183,8 @@ fun DisplayPseudo(
         )
         Spacer(modifier = Modifier.weight(1f))  // <-- This spacer pushes timestamp right
         Text(
-            text = tweet.timestamp?.let { getRelativeTime(it) } ?: stringResource(R.string.tweetscreen_texttime_error),
+            text = tweet.timestamp?.let { getRelativeTime(it) }
+                ?: stringResource(R.string.tweetscreen_texttime_error),
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray
         )
@@ -283,7 +281,6 @@ fun SimpleSearchBar(
         )
     )
 }
-
 
 
 @Preview

@@ -1,6 +1,5 @@
 package com.example.x_project_android.view.compose.navbar
 
-import BasicNavBar
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
