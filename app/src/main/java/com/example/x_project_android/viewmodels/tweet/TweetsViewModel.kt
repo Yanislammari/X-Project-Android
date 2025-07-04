@@ -15,12 +15,19 @@ class TweetsViewModel: ViewModel() {
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
+    private val _displaySearch = mutableStateOf(false)
+    val displaySearch: State<Boolean> = _displaySearch
+
     private val _searchText = mutableStateOf("")
     val searchText: State<String> = _searchText
 
     fun setSearchText(text: String) {
         _searchText.value = text
         getTweets()
+    }
+
+    fun setDisplaySearch(display: Boolean) {
+        _displaySearch.value = display
     }
 
      suspend fun fetchTweets() {
@@ -42,8 +49,8 @@ class TweetsViewModel: ViewModel() {
             ),
             Tweet(
                 id = "2",
-                content = "Un tres long texte chiaUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjnt a afffafhdjsjfjdsjfdkjsjdsjkfkjdskjfdskjkjfdskjfdskjkjfdskjfkjfdjkfskjfkjdsjjfjfjfjfjfjjfjfjfjfjlfdfdjskfslkfd joiezfhouzehfoiezhfoi hezofhzeo fezof hezoih",
-                imageUri = imageTest,
+                content = "Un tres long texte chiaUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaajUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjnt a afffafhdjsjfjdsjfdkjsjdsjkfkjdskjfdskjkjfdskjfdskjkjfdskjfkjfdjkfskjfkjdsjjfjfjfjfjfjjfjfjfjfjlfdfdjskfslkfd joiezfhouzehfoiezhfoi hezofhzeo fezof hezoih",
+
                 user = User(
                     id = "1",
                     pseudo = "Exactemenf 25 charachter je le jure enfin je crois",

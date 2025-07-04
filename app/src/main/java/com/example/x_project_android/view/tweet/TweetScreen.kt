@@ -1,9 +1,9 @@
 package com.example.x_project_android.view.tweet
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,23 +12,29 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +45,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -78,7 +85,7 @@ fun TweetScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(8.dp)
+                .padding(8.dp),
         )
 
         if (tweetsViewModel.isLoading.value) {
@@ -105,7 +112,7 @@ fun TweetScreen(
                             focusManager.clearFocus()
                             tweetsViewModel.dislikeTweet(tweet.id ?: "")
                         },
-                        tweetsViewModel = tweetsViewModel
+                        searchValue = tweetsViewModel.searchText.value
                     )
                 }
             }
@@ -118,7 +125,7 @@ fun TweetCell(
     tweet: Tweet,
     onLike: () -> Unit,
     onDislike: () -> Unit,
-    tweetsViewModel: TweetsViewModel
+    searchValue : String,
 ) {
     Column(
         modifier = Modifier
@@ -141,14 +148,19 @@ fun TweetCell(
         Text(
             text = buildHighlightedText(
                 tweet.content,
-                tweetsViewModel.searchText.value,
+                searchValue,
                 MaterialTheme.colorScheme.primary
             ),
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(bottom = 16.dp, top = 4.dp),
+            modifier = Modifier.padding(start = 8.dp, bottom = 16.dp, top = 4.dp),
             overflow = TextOverflow.Ellipsis
         )
         LikesDislikesRow(tweet, onLike, onDislike)
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+            thickness = 1.dp
+        )
     }
 }
 
@@ -198,6 +210,8 @@ fun LikesDislikesRow(
     onLike: () -> Unit,
     onDislike: () -> Unit
 ) {
+    val interactionSourceLike = remember { MutableInteractionSource() }
+    val interactionSourceDislike = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
             .padding(horizontal = 12.dp, vertical = 8.dp),
@@ -209,11 +223,17 @@ fun LikesDislikesRow(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
-                .background(
-                    if (tweet.isLiked) Color(0xFFE0F2F1) else Color(0xFFF0F0F0)
+                .background(MaterialTheme.colorScheme.surface)
+                .selectable(
+                    selected = false,
+                    onClick = onLike,
+                    indication = ripple(
+                        radius = 65.dp,
+                        color = Color(0xFF26A69A)
+                    ),
+                    interactionSource = interactionSourceLike
                 )
-                .clickable(onClick = onLike)
-                .padding(horizontal = 14.dp, vertical = 8.dp)
+                .padding(horizontal = 10.dp, vertical = 4.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.ThumbUp,
@@ -221,24 +241,30 @@ fun LikesDislikesRow(
                 tint = if (tweet.isLiked) Color(0xFF26A69A) else Color.Gray,
                 modifier = Modifier.size(20.dp)
             )
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "${tweet.likesCount}",
                 color = if (tweet.isLiked) Color(0xFF26A69A) else Color.Black,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
             )
         }
-
         // Dislike button
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
-                .background(
-                    if (tweet.isDisliked) Color(0xFFFFEBEE) else Color(0xFFF0F0F0)
-                )
+                .background(MaterialTheme.colorScheme.surface)
                 .clickable(onClick = onDislike)
-                .padding(horizontal = 14.dp, vertical = 8.dp)
+                .selectable(
+                    selected = false,
+                    onClick = onDislike,
+                    indication = ripple(
+                        radius = 65.dp,
+                        color = Color(0xFFEF5350)
+                    ),
+                    interactionSource = interactionSourceDislike
+                )
+                .padding(horizontal = 10.dp, vertical = 4.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.ThumbUp,
@@ -248,7 +274,7 @@ fun LikesDislikesRow(
                     .size(20.dp)
                     .rotate(180f)
             )
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "${tweet.dislikesCount}",
                 color = if (tweet.isDisliked) Color(0xFFEF5350) else Color.Black,
@@ -262,32 +288,52 @@ fun LikesDislikesRow(
 fun SimpleSearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
 
-    TextField(
+    OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
+        label = {
+            Text(
+                text = stringResource(R.string.tweetscreen_placeholder_search),
+                style = MaterialTheme.typography.bodySmall
+            )
+        },
         modifier = modifier
-            .padding(start = 8.dp, end = 8.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, Color.Black, RoundedCornerShape(16.dp))
-            .heightIn(min = 56.dp),
-        placeholder = { Text(stringResource(R.string.tweetscreen_placeholder_search)) },
+            .padding(horizontal = 8.dp)
+            .clip(RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         singleLine = true,
         keyboardActions = KeyboardActions(
-            onDone = { focusManager.clearFocus() }
-        )
+            onDone = {
+                focusManager.clearFocus()
+            }
+        ),
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = stringResource(R.string.tweetscreen_icon_search_description),
+                modifier = Modifier.clickable {
+                    focusManager.clearFocus()
+                }
+            )
+        },
+        trailingIcon = {
+            if (query.isNotBlank()) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = stringResource(R.string.tweetscreen_icon_description_clear),
+                    modifier = Modifier.clickable {
+                        onQueryChange("")
+                        focusManager.clearFocus()
+                    }
+                )
+            }
+        }
     )
 }
 
 
-@Preview
-@Composable
-fun SimpleSearchBarPreview() {
-    SimpleSearchBar(
-        query = "Search",
-        onQueryChange = {}
-    )
-}

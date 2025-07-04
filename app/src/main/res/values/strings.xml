@@ -32,4 +32,6 @@
     <string name="tweetscreen_texttime_error">Unknown time</string>
     <string name="tweetscreen_image_content_desc">Profile Image</string>
     <string name="tweetscreen_description_tweet_image">Tweet Image</string>
+    <string name="tweetscreen_icon_description_clear">Clear Search</string>
+    <string name="tweetscreen_icon_search_description">Search Icon</string>
 </resources>
