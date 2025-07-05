@@ -21,25 +21,22 @@ import com.example.x_project_android.viewmodels.RegisterViewModel
 fun AuthNavigation(
     navHostController: NavHostController,
 ){
+    val registerViewModel: RegisterViewModel = viewModel()
     NavHost(navController = navHostController, startDestination = "login"){
         composable("login"){
             val loginViewModel: LoginViewModel = viewModel()
             LoginView(loginViewModel,navHostController)
         }
         composable("register") {
-            val registerViewModel: RegisterViewModel = viewModel()
             BioDescScreen(registerViewModel,navHostController)
         }
         composable("register/image_screen"){
-            val registerViewModel: RegisterViewModel = viewModel()
             PickImageScreen(registerViewModel, navHostController)
         }
         composable("register/email"){
-            val registerViewModel: RegisterViewModel = viewModel()
             ChoseEmailScreen(registerViewModel,navHostController)
         }
         composable("register/password") {
-            val registerViewModel: RegisterViewModel = viewModel()
             PasswordScreen(registerViewModel,navHostController)
         }
 

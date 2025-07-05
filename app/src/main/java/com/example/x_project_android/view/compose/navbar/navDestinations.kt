@@ -4,7 +4,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.example.x_project_android.view.subscribe.SubscribeScreen
 
 interface BasicAppDestination {
     val icon: ImageVector

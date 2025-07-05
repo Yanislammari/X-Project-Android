@@ -58,12 +58,15 @@ import com.example.x_project_android.utils.getRelativeTime
 import com.example.x_project_android.utils.reduceText
 import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.view.compose.buildHighlightedText
+import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetsViewModel
 
 @Composable
 fun TweetScreen(
     navHostController: NavHostController,
-    tweetsViewModel: TweetsViewModel
+    tweetsViewModel: TweetsViewModel,
+    sharedTweetViewModel: SharedTweetViewModel,
+    displaySearchBar : Boolean = true
 ) {
     val focusManager = LocalFocusManager.current
     LaunchedEffect(Unit) {
@@ -79,14 +82,16 @@ fun TweetScreen(
                 })
             }
     ) {
-        SimpleSearchBar(
-            query = tweetsViewModel.searchText.value,
-            onQueryChange = { tweetsViewModel.setSearchText(it) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(8.dp),
-        )
+        if(displaySearchBar){
+            SimpleSearchBar(
+                query = tweetsViewModel.searchText.value,
+                onQueryChange = { tweetsViewModel.setSearchText(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(8.dp),
+            )
+        }
 
         if (tweetsViewModel.isLoading.value) {
             Box(
@@ -101,7 +106,7 @@ fun TweetScreen(
                     .fillMaxSize()
                     .weight(1f) // make this take remaining height
             ) {
-                items(tweetsViewModel.getTweets()) { tweet ->
+                items(tweetsViewModel.getTweetsBySearchValue()) { tweet ->
                     TweetCell(
                         tweet = tweet,
                         onLike = {
@@ -112,7 +117,13 @@ fun TweetScreen(
                             focusManager.clearFocus()
                             tweetsViewModel.dislikeTweet(tweet.id ?: "")
                         },
-                        searchValue = tweetsViewModel.searchText.value
+                        searchValue = tweetsViewModel.searchText.value,
+                        onClick = {
+                            focusManager.clearFocus()
+                            sharedTweetViewModel.setTweet(tweet)
+                            navHostController.navigate("tweet_detail/${tweet.id}")
+                        },
+                        imageHeight = 150,
                     )
                 }
             }
@@ -126,12 +137,18 @@ fun TweetCell(
     onLike: () -> Unit,
     onDislike: () -> Unit,
     searchValue : String,
+    onClick: () -> Unit,
+    maxLength : Int = 350,
+    imageHeight: Int? = null,
 ) {
     Column(
         modifier = Modifier
             .padding(8.dp)
             .background(MaterialTheme.colorScheme.surface)
             .clip(RoundedCornerShape(16.dp))
+            .clickable(
+                onClick = onClick,
+            )
     ) {
         if (tweet.imageUri != null) {
             AsyncImage(
@@ -139,7 +156,9 @@ fun TweetCell(
                 contentDescription = stringResource(R.string.tweetscreen_description_tweet_image),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp)
+                    .then(
+                        if (imageHeight != null) Modifier.height(imageHeight.dp) else Modifier
+                    )
                     .background(Color.Gray),
                 contentScale = ContentScale.Crop
             )
@@ -149,7 +168,8 @@ fun TweetCell(
             text = buildHighlightedText(
                 tweet.content,
                 searchValue,
-                MaterialTheme.colorScheme.primary
+                MaterialTheme.colorScheme.primary,
+                maxLength
             ),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(start = 8.dp, bottom = 16.dp, top = 4.dp),

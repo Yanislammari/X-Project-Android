@@ -8,8 +8,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import com.example.x_project_android.utils.reduceText
 
-fun buildHighlightedText(text: String?, query: String, highlightColor : Color): AnnotatedString {
-    val content = reduceText(text,350,"No content available")
+fun buildHighlightedText(text: String?, query: String, highlightColor : Color,maxLength:Int): AnnotatedString {
+    val content = reduceText(text,maxLength,"No content available")
     if (query.isBlank()) return AnnotatedString(content)
 
     val lowerContent = content.lowercase()
