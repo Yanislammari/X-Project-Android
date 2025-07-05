@@ -34,4 +34,7 @@
     <string name="tweetscreen_description_tweet_image">Tweet Image</string>
     <string name="tweetscreen_icon_description_clear">Clear Search</string>
     <string name="tweetscreen_icon_search_description">Search Icon</string>
+    <string name="tweetdetailscreen_comment_placeholder">Write a comment...</string>
+    <string name="tweetdetailscreen_no_comment">No comments yet.</string>
+    <string name="tweetdetailscreen_error">Tweet not found</string>
 </resources>

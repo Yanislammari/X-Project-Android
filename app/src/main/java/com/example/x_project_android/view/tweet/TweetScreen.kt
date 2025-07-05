@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.example.x_project_android.R
+import com.example.x_project_android.data.models.Comment
 import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
 import com.example.x_project_android.utils.getRelativeTime
@@ -163,7 +164,7 @@ fun TweetCell(
                 contentScale = ContentScale.Crop
             )
         }
-        DisplayPseudo(tweet, tweet.user)
+        DisplayPseudo(tweet = tweet,user = tweet.user)
         Text(
             text = buildHighlightedText(
                 tweet.content,
@@ -175,7 +176,7 @@ fun TweetCell(
             modifier = Modifier.padding(start = 8.dp, bottom = 16.dp, top = 4.dp),
             overflow = TextOverflow.Ellipsis
         )
-        LikesDislikesRow(tweet, onLike, onDislike)
+        LikesDislikesRow(tweet.isLiked,tweet.likesCount,tweet.isDisliked,tweet.dislikesCount,onLike, onDislike)
         HorizontalDivider(
             modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
@@ -186,7 +187,8 @@ fun TweetCell(
 
 @Composable
 fun DisplayPseudo(
-    tweet: Tweet,
+    tweet: Tweet? = null,
+    comment: Comment? = null,
     user: User,
 ) {
     Row(
@@ -213,20 +215,34 @@ fun DisplayPseudo(
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold
         )
-        Spacer(modifier = Modifier.weight(1f))  // <-- This spacer pushes timestamp right
-        Text(
-            text = tweet.timestamp?.let { getRelativeTime(it) }
-                ?: stringResource(R.string.tweetscreen_texttime_error),
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray
-        )
+        if( tweet != null){
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = tweet.timestamp?.let { getRelativeTime(it) }
+                    ?: stringResource(R.string.tweetscreen_texttime_error),
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+        }
+        else if(comment != null) {
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = comment.timestamp?.let { getRelativeTime(it) }
+                    ?: stringResource(R.string.tweetscreen_texttime_error),
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+        }
     }
 }
 
 
 @Composable
 fun LikesDislikesRow(
-    tweet: Tweet,
+    isLiked : Boolean,
+    likesCount : Int,
+    isDisliked : Boolean,
+    dislikesCount : Int,
     onLike: () -> Unit,
     onDislike: () -> Unit
 ) {
@@ -258,13 +274,13 @@ fun LikesDislikesRow(
             Icon(
                 imageVector = Icons.Default.ThumbUp,
                 contentDescription = stringResource(R.string.tweetscreen_text_like),
-                tint = if (tweet.isLiked) Color(0xFF26A69A) else Color.Gray,
+                tint = if (isLiked) Color(0xFF26A69A) else Color.Gray,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "${tweet.likesCount}",
-                color = if (tweet.isLiked) Color(0xFF26A69A) else Color.Black,
+                text = "$likesCount",
+                color = if (isLiked) Color(0xFF26A69A) else Color.Black,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
             )
         }
@@ -289,15 +305,15 @@ fun LikesDislikesRow(
             Icon(
                 imageVector = Icons.Default.ThumbUp,
                 contentDescription = stringResource(R.string.tweetscreen_text_dislike),
-                tint = if (tweet.isDisliked) Color(0xFFEF5350) else Color.Gray,
+                tint = if (isDisliked) Color(0xFFEF5350) else Color.Gray,
                 modifier = Modifier
                     .size(20.dp)
                     .rotate(180f)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "${tweet.dislikesCount}",
-                color = if (tweet.isDisliked) Color(0xFFEF5350) else Color.Black,
+                text = "$dislikesCount",
+                color = if (isDisliked) Color(0xFFEF5350) else Color.Black,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
             )
         }

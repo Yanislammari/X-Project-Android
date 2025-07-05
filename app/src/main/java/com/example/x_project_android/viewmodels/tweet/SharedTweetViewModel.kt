@@ -12,4 +12,11 @@ class SharedTweetViewModel:ViewModel() {
     fun setTweet(tweet: Tweet?) {
         _tweet.value = tweet
     }
+
+    fun markTweetAsCommented() {
+        _tweet.value?.let { currentTweet ->
+            val updatedTweet = currentTweet.copy(isCommented = true)
+            _tweet.value = updatedTweet
+        }
+    }
 }

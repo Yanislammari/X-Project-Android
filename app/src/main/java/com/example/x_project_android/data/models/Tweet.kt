@@ -10,4 +10,5 @@ data class Tweet(
     val isDisliked: Boolean = false,
     val dislikesCount: Int = 0,
     val timestamp : Long? = System.currentTimeMillis(),
+    val isCommented: Boolean = false,
 )

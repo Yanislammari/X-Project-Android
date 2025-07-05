@@ -100,8 +100,8 @@ class TweetsViewModel: ViewModel() {
         val updatedTweet = oldTweet.copy(
             isDisliked = false,
             dislikesCount = if (wasDisliked) maxOf(0, oldTweet.dislikesCount - 1) else oldTweet.dislikesCount,
-            isLiked = true,
-            likesCount = if (wasLiked) oldTweet.likesCount else oldTweet.likesCount + 1
+            isLiked = !wasLiked,
+            likesCount = if (wasLiked) maxOf(0, oldTweet.likesCount - 1) else oldTweet.likesCount + 1
         )
 
         _tweets[index] = updatedTweet
@@ -119,12 +119,24 @@ class TweetsViewModel: ViewModel() {
         val wasLiked = oldTweet.isLiked
 
         val updatedTweet = oldTweet.copy(
-            isDisliked = true,
-            dislikesCount = if (wasDisliked) oldTweet.dislikesCount else oldTweet.dislikesCount + 1,
+            isDisliked = !wasDisliked,
+            dislikesCount = if (wasDisliked) maxOf(0, oldTweet.dislikesCount - 1) else oldTweet.dislikesCount + 1,
             isLiked = false,
             likesCount = if (wasLiked) maxOf(0, oldTweet.likesCount - 1) else oldTweet.likesCount
         )
 
+        _tweets[index] = updatedTweet
+
+        return updatedTweet
+    }
+
+    fun markTweetAsCommented(tweetId: String?): Tweet? {
+        tweetId ?: return null
+        val index = _tweets.indexOfFirst { it.id == tweetId }
+        if (index == -1) return null
+
+        val oldTweet = _tweets[index]
+        val updatedTweet = oldTweet.copy(isCommented = true)
         _tweets[index] = updatedTweet
 
         return updatedTweet
