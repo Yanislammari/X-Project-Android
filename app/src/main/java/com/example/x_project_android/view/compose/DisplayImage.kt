@@ -1,6 +1,5 @@
 package com.example.x_project_android.view.compose
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -16,12 +15,12 @@ import com.example.x_project_android.R
 
 
 @Composable
-fun DisplayRoundImage(uri: Uri?) {
+fun DisplayRoundImage(uri: String?,size : Int = 150) {
     AsyncImage(
         model = uri,
         contentDescription = stringResource(R.string.pickimagescreen_iùage_description),
         modifier = Modifier
-            .size(150.dp)
+            .size(25.dp)
             .clip(CircleShape)
             .background(Color.Gray),
         contentScale = ContentScale.Crop

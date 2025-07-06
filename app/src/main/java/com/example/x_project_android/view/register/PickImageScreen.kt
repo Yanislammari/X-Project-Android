@@ -94,7 +94,7 @@ fun PickImageScreen(
 
             if (registerViewModel.imageUri.value != null) {
                 DisplayRoundImage(
-                    uri = registerViewModel.imageUri.value
+                    uri = registerViewModel.imageUri.value.toString()
                 )
             } else {
                 Box(

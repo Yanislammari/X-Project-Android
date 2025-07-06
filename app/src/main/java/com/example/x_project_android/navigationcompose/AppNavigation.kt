@@ -16,6 +16,7 @@ import com.example.x_project_android.view.compose.navbar.TweetScreenDest
 import com.example.x_project_android.view.subscribe.SubscribeScreen
 import com.example.x_project_android.view.tweet.TweetDetailScreen
 import com.example.x_project_android.view.tweet.TweetScreen
+import com.example.x_project_android.viewmodels.subscribe.SubscribeViewModel
 import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailScreenDest
 import com.example.x_project_android.viewmodels.tweet.TweetDetailViewModel
@@ -28,6 +29,7 @@ fun AppNavigation(
 ){
     val sharedTweetViewModel: SharedTweetViewModel = viewModel()
     val tweetsViewModel: TweetsViewModel = viewModel()
+    val subscribeViewModel: SubscribeViewModel = viewModel()
     NavHost(
         modifier = modifier,
         navController = navHostController,
@@ -36,7 +38,9 @@ fun AppNavigation(
         composable(TweetScreenDest.route) {
             TweetScreen(navHostController,tweetsViewModel, sharedTweetViewModel)
         }
-        composable(SubscribeScreenDest.route) { SubscribeScreen(navHostController) }
+        composable(SubscribeScreenDest.route) {
+            SubscribeScreen(navHostController, subscribeViewModel)
+        }
 
         composable(
             route = TweetDetailScreenDest.FULLROUTE,

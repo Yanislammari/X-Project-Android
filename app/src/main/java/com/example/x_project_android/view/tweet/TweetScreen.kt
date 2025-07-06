@@ -58,6 +58,7 @@ import com.example.x_project_android.data.models.User
 import com.example.x_project_android.utils.getRelativeTime
 import com.example.x_project_android.utils.reduceText
 import com.example.x_project_android.view.compose.DisplayLoader
+import com.example.x_project_android.view.compose.DividerHorizontal
 import com.example.x_project_android.view.compose.buildHighlightedText
 import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetsViewModel
@@ -177,16 +178,13 @@ fun TweetCell(
             overflow = TextOverflow.Ellipsis
         )
         LikesDislikesRow(tweet.isLiked,tweet.likesCount,tweet.isDisliked,tweet.dislikesCount,onLike, onDislike)
-        HorizontalDivider(
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-            thickness = 1.dp
-        )
+        DividerHorizontal()
     }
 }
 
 @Composable
 fun DisplayPseudo(
+    formatedPseudo: String? = null,
     tweet: Tweet? = null,
     comment: Comment? = null,
     user: User,
@@ -209,7 +207,7 @@ fun DisplayPseudo(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = reduceText(user.pseudo),
+            text = reduceText(formatedPseudo ?: user.pseudo),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium,
