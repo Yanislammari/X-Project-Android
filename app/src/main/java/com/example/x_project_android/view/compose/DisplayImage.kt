@@ -20,7 +20,7 @@ fun DisplayRoundImage(uri: String?,size : Int = 150) {
         model = uri,
         contentDescription = stringResource(R.string.pickimagescreen_iùage_description),
         modifier = Modifier
-            .size(25.dp)
+            .size(size.dp)
             .clip(CircleShape)
             .background(Color.Gray),
         contentScale = ContentScale.Crop

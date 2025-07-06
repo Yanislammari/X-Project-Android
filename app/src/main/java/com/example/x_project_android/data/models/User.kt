@@ -6,4 +6,5 @@ data class User(
     val bio: String? = null,
     val imageUri: String? = null,
     val createdAt: Long? = null,
+    val isSubscribed: Boolean = false,
 )

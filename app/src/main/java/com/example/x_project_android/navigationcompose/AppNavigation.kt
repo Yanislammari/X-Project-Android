@@ -13,10 +13,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.x_project_android.view.compose.navbar.SubscribeScreenDest
 import com.example.x_project_android.view.compose.navbar.TweetScreenDest
+import com.example.x_project_android.view.subscribe.SubscribeDetailScreen
 import com.example.x_project_android.view.subscribe.SubscribeScreen
 import com.example.x_project_android.view.tweet.TweetDetailScreen
 import com.example.x_project_android.view.tweet.TweetScreen
+import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
+import com.example.x_project_android.viewmodels.subscribe.SubscribeDetailViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscribeViewModel
+import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScreenDest
 import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailScreenDest
 import com.example.x_project_android.viewmodels.tweet.TweetDetailViewModel
@@ -30,6 +34,7 @@ fun AppNavigation(
     val sharedTweetViewModel: SharedTweetViewModel = viewModel()
     val tweetsViewModel: TweetsViewModel = viewModel()
     val subscribeViewModel: SubscribeViewModel = viewModel()
+    val sharedSubscribeViewModel : SharedSubscribeViewModel = viewModel()
     NavHost(
         modifier = modifier,
         navController = navHostController,
@@ -39,7 +44,7 @@ fun AppNavigation(
             TweetScreen(navHostController,tweetsViewModel, sharedTweetViewModel)
         }
         composable(SubscribeScreenDest.route) {
-            SubscribeScreen(navHostController, subscribeViewModel)
+            SubscribeScreen(navHostController, subscribeViewModel,sharedSubscribeViewModel)
         }
 
         composable(
@@ -54,6 +59,20 @@ fun AppNavigation(
                 tweetDetailViewModel.setTweetId(tweetId)
             }
             TweetDetailScreen(navHostController, tweetsViewModel,tweetDetailViewModel, sharedTweetViewModel)
+        }
+
+        composable(
+            route = SubscriptionDetailScreenDest.FULLROUTE,
+            arguments = listOf(navArgument(SubscriptionDetailScreenDest.USERIDARG) { type = NavType.StringType })
+        ) {
+            val subscribeDetailViewModel: SubscribeDetailViewModel = viewModel()
+            val userId = it.arguments?.getString(SubscriptionDetailScreenDest.USERIDARG)
+                ?: throw IllegalArgumentException("Tweet ID is required")
+
+            LaunchedEffect(userId) {
+                subscribeDetailViewModel.setUserId(userId)
+            }
+            SubscribeDetailScreen(navHostController,subscribeDetailViewModel,subscribeViewModel,sharedSubscribeViewModel)
         }
     }
 }

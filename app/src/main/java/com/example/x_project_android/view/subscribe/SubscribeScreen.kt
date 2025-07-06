@@ -32,13 +32,15 @@ import com.example.x_project_android.utils.reduceText
 import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.view.compose.DividerHorizontal
 import com.example.x_project_android.view.tweet.DisplayPseudo
+import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscribeViewModel
 import com.example.x_project_android.viewmodels.tweet.imageTest
 
 @Composable
 fun SubscribeScreen(
     navHostController: NavHostController,
-    subscribeViewModel: SubscribeViewModel
+    subscribeViewModel: SubscribeViewModel,
+    sharedSubscribeViewModel: SharedSubscribeViewModel
 ) {
     LaunchedEffect(Unit) {
         subscribeViewModel.fetchSubscriptions()
@@ -91,8 +93,10 @@ fun SubscribeScreen(
                 SubscribeCell(
                     tweet = tweet,
                     onClick = {
-                        // Handle click on the tweet cell, e.g., navigate to tweet detail
-                        // navHostController.navigate("tweetDetail/${tweet.id}")
+                        sharedSubscribeViewModel.setUser(tweet.user)
+                        navHostController.navigate(
+                            "subscription_detail/${tweet.user.id}"
+                        )
                     }
                 )
             }
