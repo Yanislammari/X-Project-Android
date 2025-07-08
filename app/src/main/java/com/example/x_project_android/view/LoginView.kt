@@ -17,7 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.x_project_android.R
-import com.example.x_project_android.navigationcompose.navigateDeleteAllRoute
+import com.example.x_project_android.view.navigationcompose.navigateDeleteAllRoute
 import com.example.x_project_android.ui.theme.AppTheme
 import com.example.x_project_android.view.compose.navbar.TweetScreenDest
 import com.example.x_project_android.viewmodels.LoginViewModel

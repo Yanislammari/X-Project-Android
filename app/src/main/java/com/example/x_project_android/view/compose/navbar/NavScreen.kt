@@ -9,8 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.x_project_android.navigationcompose.AppNavigation
-import com.example.x_project_android.navigationcompose.navigateSingleToTop
+import com.example.x_project_android.view.navigationcompose.AppNavigation
+import com.example.x_project_android.view.navigationcompose.navigateSingleToTop
 
 @Composable
 fun NavScreen(rootNavController: NavHostController) {

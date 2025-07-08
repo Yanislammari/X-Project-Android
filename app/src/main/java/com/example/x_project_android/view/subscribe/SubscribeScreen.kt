@@ -32,18 +32,20 @@ import com.example.x_project_android.utils.reduceText
 import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.view.compose.DividerHorizontal
 import com.example.x_project_android.view.tweet.DisplayPseudo
-import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscribeViewModel
+import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScreenDest
 import com.example.x_project_android.viewmodels.tweet.imageTest
 
 @Composable
 fun SubscribeScreen(
     navHostController: NavHostController,
     subscribeViewModel: SubscribeViewModel,
-    sharedSubscribeViewModel: SharedSubscribeViewModel
 ) {
     LaunchedEffect(Unit) {
-        subscribeViewModel.fetchSubscriptions()
+        if(!subscribeViewModel.hasFetched.value) {
+            subscribeViewModel.fetchSubscriptions()
+            subscribeViewModel.setHasFetched(true)
+        }
     }
     Scaffold(
         topBar = {
@@ -93,9 +95,9 @@ fun SubscribeScreen(
                 SubscribeCell(
                     tweet = tweet,
                     onClick = {
-                        sharedSubscribeViewModel.setUser(tweet.user)
+                        subscribeViewModel.goToSubscribeDetail(tweet.user)
                         navHostController.navigate(
-                            "subscription_detail/${tweet.user.id}"
+                            SubscriptionDetailScreenDest.ROUTE + "/${tweet.user.id}",
                         )
                     }
                 )
@@ -125,7 +127,8 @@ fun SubscribeCell(
         DisplayPseudo(
             user = tweet.user,
             tweet = tweet,
-            formatedPseudo = "Posted by ${reduceText(tweet.user.pseudo, 25)}"
+            formatedPseudo = "Posted by ${reduceText(tweet.user.pseudo, 25)}",
+            onClick = onClick
         )
         Text(
             text = reduceText(tweet.content, 50, "..."),

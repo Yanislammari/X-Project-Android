@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
+import com.example.x_project_android.event.NavEvent
+import com.example.x_project_android.event.NavEventBus
 import com.example.x_project_android.viewmodels.tweet.imageTest
 
 class SubscribeViewModel : ViewModel() {
@@ -16,11 +18,17 @@ class SubscribeViewModel : ViewModel() {
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
+    private val _hasFetched = mutableStateOf(false)
+    val hasFetched: State<Boolean> = _hasFetched
+
+    fun setHasFetched(value: Boolean) {
+        _hasFetched.value = value
+    }
+
     suspend fun fetchSubscriptions() {
-        if (_subscriptionsProfile.isNotEmpty()) return
+        if (_hasFetched.value) return
         _isLoading.value = true
         kotlinx.coroutines.delay(500)
-        _subscriptionsProfile.clear()
         _subscriptionsProfile.addAll(
             listOf(
                 Tweet(
@@ -79,7 +87,6 @@ class SubscribeViewModel : ViewModel() {
         if (userId == null) return
 
         val index = _subscriptionsProfile.indexOfFirst { it.user.id == userId }
-        Log.d("SubscribeViewModel", "Index of user $userId: $index")
 
         if (index != -1) {
             val tweet = _subscriptionsProfile[index]
@@ -93,10 +100,13 @@ class SubscribeViewModel : ViewModel() {
 
     fun addWhenSubscribe(user: User?) {
         if( user == null) return
-        Log.d("SubscribeViewModel", "Index of user ${user.id}")
         if (_subscriptionsProfile.any { it.user.id == user.id }) return
         _subscriptionsProfile.add(Tweet(
             user = user
         ))
+    }
+
+    fun goToSubscribeDetail(user: User?) {
+        NavEventBus.sendEvent(NavEvent.SubscribeDetail(user))
     }
 }

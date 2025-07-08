@@ -4,22 +4,64 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.x_project_android.data.models.Comment
 import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
+import com.example.x_project_android.event.GlobalEvent
+import com.example.x_project_android.event.GlobalEventBus
+import com.example.x_project_android.event.NavEvent
+import com.example.x_project_android.event.NavEventBus
 import kotlinx.coroutines.*
 
 
 object TweetDetailScreenDest {
-    private const val ROUTE = "tweet_detail"
+    const val ROUTE = "tweet_detail"
     const val TWEETIDARG = "tweetId"
     private const val TWEETIDPLACEHOLDER = "{$TWEETIDARG}"
     const val FULLROUTE = "$ROUTE/$TWEETIDPLACEHOLDER"
 }
 
 class TweetDetailViewModel: ViewModel() {
+
+    init {
+        viewModelScope.launch {
+            launch {
+                NavEventBus.events.collect { event ->
+                    onNavEvent(event)
+                }
+            }
+
+            launch {
+                GlobalEventBus.events.collect { event ->
+                    onGlobalEvent(event)
+                }
+            }
+        }
+    }
+
+    private fun onNavEvent(event: NavEvent) {
+        if (event is NavEvent.TweetDetail) {
+            setTweet(event.tweet)
+        }
+    }
+
+    private fun onGlobalEvent(event: GlobalEvent) {
+        when (event) {
+            is GlobalEvent.Like -> likeTweet(event.tweetId)
+            is GlobalEvent.Dislike -> dislikeTweet(event.tweetId)
+            is GlobalEvent.LikeComment -> likeComment(event.commentId)
+            is GlobalEvent.DislikeComment -> dislikeComment(event.commentId)
+            else -> {}
+        }
+    }
+
+
     private val _tweetId = mutableStateOf("")
     val tweetId: State<String> = _tweetId
+
+    private val  _tweet = mutableStateOf<Tweet?>(null)
+    val tweet: State<Tweet?> = _tweet
 
     private var _comments = mutableStateListOf<Comment>()
     val comments: List<Comment> = _comments
@@ -37,15 +79,19 @@ class TweetDetailViewModel: ViewModel() {
         _tweetId.value = id
     }
 
+    private fun setTweet(tweet: Tweet?) {
+        _tweet.value = tweet
+    }
+
     fun setComment(newComment: String) {
         if(newComment.length < 100) {
             _comment.value = newComment
         }
     }
 
-    suspend fun fetchTweet(sharedViewModel: SharedTweetViewModel) {
+    suspend fun fetchTweet() {
         _isLoading.value = true
-        val a = Tweet(
+        Tweet(
             id = _tweetId.value,
             content = "Voici mon chat Miaou !",
             imageUri = imageTest,
@@ -59,7 +105,6 @@ class TweetDetailViewModel: ViewModel() {
             dislikesCount = 10,
         )
         delay(1000)
-        setTweetInShared(a,sharedViewModel)
         _isLoading.value = false
     }
 
@@ -67,6 +112,7 @@ class TweetDetailViewModel: ViewModel() {
         if (tweetId == null) return
         _isLoadingComment.value = true
         delay(1000)
+        _comments.clear()
         _comments.addAll(
             listOf(
                 Comment(
@@ -100,12 +146,8 @@ class TweetDetailViewModel: ViewModel() {
         _isLoadingComment.value = false
     }
 
-    private fun setTweetInShared(tweet: Tweet?, viewModel: SharedTweetViewModel) {
-        viewModel.setTweet(tweet)
-    }
-
-    fun addComment(sharedViewModel: SharedTweetViewModel,tweetsViewModel: TweetsViewModel,comment : String, tweetId: String) {
-        val commentA = Comment(
+    fun addComment(comment : String, tweetId: String) {
+        val commentToAdd = Comment(
             id = "comment_${System.currentTimeMillis()}",
             tweetId = tweetId,
             content = comment,
@@ -116,12 +158,52 @@ class TweetDetailViewModel: ViewModel() {
             ),
             timestamp = System.currentTimeMillis(),
         )
-        _comments.add(commentA)
-        sharedViewModel.markTweetAsCommented()
-        tweetsViewModel.markTweetAsCommented(tweetId)
+        if( commentToAdd.id == null) return
+        _comments.add(commentToAdd)
+        setTweet(
+            tweet.value?.copy(
+                isCommented = true
+            )
+        )
     }
 
-    fun likeComment(commentId: String?){
+    private fun likeTweet(tweetId: String?){
+        tweetId ?: return
+        val oldTweet = _tweet.value ?: return
+        if (oldTweet.id != tweetId) return
+
+        val wasDisliked = oldTweet.isDisliked
+        val wasLiked = oldTweet.isLiked
+
+        val updatedTweet = oldTweet.copy(
+            isDisliked = false,
+            dislikesCount = if (wasDisliked) maxOf(0, oldTweet.dislikesCount - 1) else oldTweet.dislikesCount,
+            isLiked = !wasLiked,
+            likesCount = if (wasLiked) maxOf(0, oldTweet.likesCount - 1) else oldTweet.likesCount + 1
+        )
+
+        setTweet(updatedTweet)
+    }
+
+    private fun dislikeTweet(tweetId: String?){
+        tweetId ?: return
+        val oldTweet = _tweet.value ?: return
+        if (oldTweet.id != tweetId) return
+
+        val wasDisliked = oldTweet.isDisliked
+        val wasLiked = oldTweet.isLiked
+
+        val updatedTweet = oldTweet.copy(
+            isDisliked = !wasDisliked,
+            dislikesCount = if (wasDisliked) maxOf(0, oldTweet.dislikesCount - 1) else oldTweet.dislikesCount + 1,
+            isLiked = false,
+            likesCount = if (wasLiked) maxOf(0, oldTweet.likesCount - 1) else oldTweet.likesCount
+        )
+
+        setTweet(updatedTweet)
+    }
+
+    private fun likeComment(commentId: String?){
         commentId ?: return
         val index = _comments.indexOfFirst { it.id == commentId }
         if (index == -1) return
@@ -140,7 +222,7 @@ class TweetDetailViewModel: ViewModel() {
         _comments[index] = updatedComment
     }
 
-    fun dislikeComment(commentId: String?){
+    private fun dislikeComment(commentId: String?){
         commentId ?: return
         val index = _comments.indexOfFirst { it.id == commentId }
         if (index == -1) return

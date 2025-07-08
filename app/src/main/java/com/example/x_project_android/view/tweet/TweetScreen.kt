@@ -26,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -47,7 +46,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
@@ -55,23 +53,24 @@ import com.example.x_project_android.R
 import com.example.x_project_android.data.models.Comment
 import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
+import com.example.x_project_android.event.SendGlobalEvent
+import com.example.x_project_android.event.SendNavEvent
 import com.example.x_project_android.utils.getRelativeTime
 import com.example.x_project_android.utils.reduceText
 import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.view.compose.DividerHorizontal
 import com.example.x_project_android.view.compose.buildHighlightedText
-import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
+import com.example.x_project_android.viewmodels.tweet.TweetDetailScreenDest
 import com.example.x_project_android.viewmodels.tweet.TweetsViewModel
 
 @Composable
 fun TweetScreen(
     navHostController: NavHostController,
     tweetsViewModel: TweetsViewModel,
-    sharedTweetViewModel: SharedTweetViewModel,
-    displaySearchBar : Boolean = true
 ) {
     val focusManager = LocalFocusManager.current
-    LaunchedEffect(Unit) {
+
+    LaunchedEffect(Unit){
         tweetsViewModel.fetchTweets()
     }
 
@@ -84,16 +83,14 @@ fun TweetScreen(
                 })
             }
     ) {
-        if(displaySearchBar){
-            SimpleSearchBar(
-                query = tweetsViewModel.searchText.value,
-                onQueryChange = { tweetsViewModel.setSearchText(it) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(8.dp),
-            )
-        }
+        SimpleSearchBar(
+            query = tweetsViewModel.searchText.value,
+            onQueryChange = { tweetsViewModel.setSearchText(it) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(8.dp),
+        )
 
         if (tweetsViewModel.isLoading.value) {
             Box(
@@ -106,26 +103,25 @@ fun TweetScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .weight(1f) // make this take remaining height
+                    .weight(1f)
             ) {
                 items(tweetsViewModel.getTweetsBySearchValue()) { tweet ->
                     TweetCell(
                         tweet = tweet,
-                        onLike = {
-                            focusManager.clearFocus()
-                            tweetsViewModel.likeTweet(tweet.id ?: "")
-                        },
-                        onDislike = {
-                            focusManager.clearFocus()
-                            tweetsViewModel.dislikeTweet(tweet.id ?: "")
-                        },
                         searchValue = tweetsViewModel.searchText.value,
                         onClick = {
                             focusManager.clearFocus()
-                            sharedTweetViewModel.setTweet(tweet)
-                            navHostController.navigate("tweet_detail/${tweet.id}")
+                            SendNavEvent.onTweetDetail(tweet)
+                            navHostController.navigate(TweetDetailScreenDest.ROUTE+"/${tweet.id}")
                         },
                         imageHeight = 150,
+                        onPseudoClick = {
+                            focusManager.clearFocus()
+                            SendNavEvent.onSubscribeDetail(tweet.user)
+                            navHostController.navigate("subscription_detail/${tweet.user.id}")
+                        },
+                        onLike = {SendGlobalEvent.onLikeTweet(tweet.id)},
+                        onDislike = {SendGlobalEvent.onDislikeTweet(tweet.id) }
                     )
                 }
             }
@@ -136,12 +132,13 @@ fun TweetScreen(
 @Composable
 fun TweetCell(
     tweet: Tweet,
-    onLike: () -> Unit,
-    onDislike: () -> Unit,
-    searchValue : String,
+    searchValue: String,
     onClick: () -> Unit,
-    maxLength : Int = 350,
+    maxLength: Int = 350,
     imageHeight: Int? = null,
+    onPseudoClick: () -> Unit,
+    onLike: () -> Unit = {},
+    onDislike: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -165,7 +162,7 @@ fun TweetCell(
                 contentScale = ContentScale.Crop
             )
         }
-        DisplayPseudo(tweet = tweet,user = tweet.user)
+        DisplayPseudo(tweet = tweet, user = tweet.user, onClick = onPseudoClick)
         Text(
             text = buildHighlightedText(
                 tweet.content,
@@ -177,7 +174,14 @@ fun TweetCell(
             modifier = Modifier.padding(start = 8.dp, bottom = 16.dp, top = 4.dp),
             overflow = TextOverflow.Ellipsis
         )
-        LikesDislikesRow(tweet.isLiked,tweet.likesCount,tweet.isDisliked,tweet.dislikesCount,onLike, onDislike)
+        LikesDislikesRow(
+            tweet.isLiked,
+            tweet.likesCount,
+            tweet.isDisliked,
+            tweet.dislikesCount,
+            onLike,
+            onDislike,
+        )
         DividerHorizontal()
     }
 }
@@ -188,11 +192,15 @@ fun DisplayPseudo(
     tweet: Tweet? = null,
     comment: Comment? = null,
     user: User,
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .padding(8.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable(
+                onClick = onClick,
+            ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
@@ -213,7 +221,7 @@ fun DisplayPseudo(
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold
         )
-        if( tweet != null){
+        if (tweet != null) {
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = tweet.timestamp?.let { getRelativeTime(it) }
@@ -221,8 +229,7 @@ fun DisplayPseudo(
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
-        }
-        else if(comment != null) {
+        } else if (comment != null) {
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = comment.timestamp?.let { getRelativeTime(it) }
@@ -237,10 +244,10 @@ fun DisplayPseudo(
 
 @Composable
 fun LikesDislikesRow(
-    isLiked : Boolean,
-    likesCount : Int,
-    isDisliked : Boolean,
-    dislikesCount : Int,
+    isLiked: Boolean,
+    likesCount: Int,
+    isDisliked: Boolean,
+    dislikesCount: Int,
     onLike: () -> Unit,
     onDislike: () -> Unit
 ) {
