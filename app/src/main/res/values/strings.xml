@@ -38,4 +38,5 @@
     <string name="tweetdetailscreen_no_comment">No comments yet.</string>
     <string name="tweetdetailscreen_error">Tweet not found</string>
     <string name="subscribescreen_no_tweet_error">No subscriptions found</string>
+    <string name="subdetailscreen_error_no_tweet">No tweets found</string>
 </resources>

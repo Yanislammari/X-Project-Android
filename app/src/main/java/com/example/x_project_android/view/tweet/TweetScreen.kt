@@ -1,5 +1,6 @@
 package com.example.x_project_android.view.tweet
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -53,13 +54,15 @@ import com.example.x_project_android.R
 import com.example.x_project_android.data.models.Comment
 import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
+import com.example.x_project_android.event.GlobalEventBus
 import com.example.x_project_android.event.SendGlobalEvent
-import com.example.x_project_android.event.SendNavEvent
 import com.example.x_project_android.utils.getRelativeTime
 import com.example.x_project_android.utils.reduceText
 import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.view.compose.DividerHorizontal
 import com.example.x_project_android.view.compose.buildHighlightedText
+import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScreenDest
+import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailScreenDest
 import com.example.x_project_android.viewmodels.tweet.TweetsViewModel
 
@@ -67,12 +70,14 @@ import com.example.x_project_android.viewmodels.tweet.TweetsViewModel
 fun TweetScreen(
     navHostController: NavHostController,
     tweetsViewModel: TweetsViewModel,
+    sharedTweetViewModel: SharedTweetViewModel,
 ) {
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(Unit){
         tweetsViewModel.fetchTweets()
     }
+
 
     Column(
         modifier = Modifier
@@ -111,14 +116,14 @@ fun TweetScreen(
                         searchValue = tweetsViewModel.searchText.value,
                         onClick = {
                             focusManager.clearFocus()
-                            SendNavEvent.onTweetDetail(tweet)
+                            sharedTweetViewModel.setTweetShared(tweet)
+                            Log.d("TweetScreen", "Navigating to TweetDetailScreen with tweet ID: ${sharedTweetViewModel.tweet?.likesCount}")
                             navHostController.navigate(TweetDetailScreenDest.ROUTE+"/${tweet.id}")
                         },
                         imageHeight = 150,
                         onPseudoClick = {
                             focusManager.clearFocus()
-                            SendNavEvent.onSubscribeDetail(tweet.user)
-                            navHostController.navigate("subscription_detail/${tweet.user.id}")
+                            navHostController.navigate(SubscriptionDetailScreenDest.ROUTE+"/${tweet.user.id}")
                         },
                         onLike = {SendGlobalEvent.onLikeTweet(tweet.id)},
                         onDislike = {SendGlobalEvent.onDislikeTweet(tweet.id) }

@@ -18,29 +18,45 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.x_project_android.R
 import com.example.x_project_android.data.models.User
-import com.example.x_project_android.event.GlobalEvent
-import com.example.x_project_android.event.GlobalEventBus
-import com.example.x_project_android.event.NavEventBus
+import com.example.x_project_android.event.SendGlobalEvent
 import com.example.x_project_android.utils.reduceText
 import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.view.compose.DisplayRoundImage
 import com.example.x_project_android.view.tweet.TweetCell
+import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscribeDetailViewModel
-import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScreenDest
+import com.example.x_project_android.viewmodels.tweet.TweetDetailScreenDest
 
 @Composable
 fun SubscribeDetailScreen(
     navHostController: NavHostController,
     subscribeDetailViewModel: SubscribeDetailViewModel,
+    sharedSubscribeViewModel: SharedSubscribeViewModel
 ) {
+    LaunchedEffect(Unit){
+        if(subscribeDetailViewModel.userDetail.value == null) {
+            if(sharedSubscribeViewModel.user == null) {
+                // fetch using id
+            }
+            else{
+                subscribeDetailViewModel.setUserDetail(sharedSubscribeViewModel.user)
+            }
+        }
+        subscribeDetailViewModel.fetchTweetFromUserId(subscribeDetailViewModel.userId.value)
+    }
+
     Scaffold { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -52,8 +68,8 @@ fun SubscribeDetailScreen(
             item {
                 DisplayProfileDetail(
                     user = subscribeDetailViewModel.userDetail.value,
-                    updatedSubscribe = {
-                        subscribeDetailViewModel.statusSubscribe()
+                    onClick = {
+                        subscribeDetailViewModel.sendEventStateSub()
                     }
                 )
             }
@@ -65,8 +81,12 @@ fun SubscribeDetailScreen(
                     DisplayLoader()
                 } else if (subscribeDetailViewModel.tweetProfile.isEmpty()) {
                     Text(
-                        text = "No tweets found",
-                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.subdetailscreen_error_no_tweet),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp), // padding above
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold
                     )
                 } else {
                     subscribeDetailViewModel.tweetProfile.forEach { tweet ->
@@ -74,14 +94,14 @@ fun SubscribeDetailScreen(
                             tweet = tweet,
                             searchValue = "",
                             onClick = {
-                                subscribeDetailViewModel.navigateToTweetDetail(tweet)
-                                navHostController.navigate(
-                                    SubscriptionDetailScreenDest.ROUTE + "/" + tweet.user.id
-                                )
+                                navHostController.currentBackStackEntry?.savedStateHandle?.set("tweet", tweet)
+                                navHostController.navigate(TweetDetailScreenDest.ROUTE+"/${tweet.id}")
                             },
                             maxLength = 100,
                             imageHeight = 100,
                             onPseudoClick = {},
+                            onLike = {SendGlobalEvent.onLikeTweet(tweet.id)},
+                            onDislike = {SendGlobalEvent.onDislikeTweet(tweet.id)},
                         )
                     }
                 }
@@ -96,7 +116,7 @@ fun SubscribeDetailScreen(
 @Composable
 fun DisplayProfileDetail(
     user: User?,
-    updatedSubscribe: () -> Unit
+    onClick : ()->Unit
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -165,7 +185,7 @@ fun DisplayProfileDetail(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .clickable(
-                            onClick = updatedSubscribe,
+                            onClick = onClick,
                         )
                 )
             }

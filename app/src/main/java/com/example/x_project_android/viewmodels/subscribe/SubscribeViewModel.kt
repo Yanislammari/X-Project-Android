@@ -5,13 +5,33 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
-import com.example.x_project_android.event.NavEvent
-import com.example.x_project_android.event.NavEventBus
+import com.example.x_project_android.event.GlobalEvent
+import com.example.x_project_android.event.GlobalEventBus
 import com.example.x_project_android.viewmodels.tweet.imageTest
+import kotlinx.coroutines.launch
 
 class SubscribeViewModel : ViewModel() {
+
+    init {
+        viewModelScope.launch {
+            GlobalEventBus.events.collect { event ->
+                onEvent(event)
+            }
+        }
+    }
+
+    private fun onEvent(event: GlobalEvent) {
+        when (event) {
+            is GlobalEvent.Subscribe -> addWhenSubscribe(event.user)
+            is GlobalEvent.Unsubscribe -> deleteWhenUnsubscribe(event.userId)
+            else -> {}
+        }
+    }
+
+
     private var _subscriptionsProfile = mutableStateListOf<Tweet>()
     val subscriptionsProfile: List<Tweet> = _subscriptionsProfile
 
@@ -83,7 +103,7 @@ class SubscribeViewModel : ViewModel() {
         _isLoading.value = false
     }
 
-    fun deleteWhenUnsubscribe(userId: String?){
+    private fun deleteWhenUnsubscribe(userId: String?){
         if (userId == null) return
 
         val index = _subscriptionsProfile.indexOfFirst { it.user.id == userId }
@@ -98,15 +118,11 @@ class SubscribeViewModel : ViewModel() {
         }
     }
 
-    fun addWhenSubscribe(user: User?) {
+    private fun addWhenSubscribe(user: User?) {
         if( user == null) return
         if (_subscriptionsProfile.any { it.user.id == user.id }) return
         _subscriptionsProfile.add(Tweet(
             user = user
         ))
-    }
-
-    fun goToSubscribeDetail(user: User?) {
-        NavEventBus.sendEvent(NavEvent.SubscribeDetail(user))
     }
 }

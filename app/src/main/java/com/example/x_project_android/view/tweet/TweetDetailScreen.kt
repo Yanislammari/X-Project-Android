@@ -1,5 +1,6 @@
 package com.example.x_project_android.view.tweet
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -29,16 +30,23 @@ import com.example.x_project_android.event.GlobalEvent
 import com.example.x_project_android.event.GlobalEventBus
 import com.example.x_project_android.event.SendGlobalEvent
 import com.example.x_project_android.view.compose.DisplayLoader
+import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailViewModel
 
 @Composable
 fun TweetDetailScreen(
     navHostController: NavHostController,
     tweetDetailViewModel: TweetDetailViewModel,
+    sharedTweetViewModel: SharedTweetViewModel,
 ) {
     LaunchedEffect(tweetDetailViewModel.tweetId.value) {
         if (tweetDetailViewModel.tweet.value == null) {
-            tweetDetailViewModel.fetchTweet()
+            if(sharedTweetViewModel.tweet == null){
+                tweetDetailViewModel.fetchTweet()
+            }
+            else{
+                tweetDetailViewModel.setTweet(sharedTweetViewModel.tweet)
+            }
         }
         tweetDetailViewModel.fetchComments()
     }
@@ -87,10 +95,15 @@ fun TweetDetailScreen(
                                 tint = if (tweetDetailViewModel.comment.value.isEmpty()) Color.Gray else MaterialTheme.colorScheme.primary,
                                 modifier = Modifier
                                     .clickable(enabled = tweetDetailViewModel.comment.value.isNotEmpty()) {
-                                        tweetDetailViewModel.addComment(
-                                            tweetDetailViewModel.comment.value,
-                                            tweetDetailViewModel.tweetId.value,
+                                        val comment = Comment(
+                                            id = "random_"+System.currentTimeMillis(),
+                                            tweetId = tweetDetailViewModel.tweetId.value,
+                                            content = tweetDetailViewModel.comment.value,
+                                            user = tweetDetailViewModel.tweet.value?.user ?: return@clickable,
+                                            timestamp = System.currentTimeMillis(),
                                         )
+
+                                        GlobalEventBus.sendEvent(GlobalEvent.AddComment(comment))
                                         tweetDetailViewModel.setComment("")
                                     }
                             )

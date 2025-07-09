@@ -10,10 +10,7 @@ import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
 import com.example.x_project_android.event.GlobalEvent
 import com.example.x_project_android.event.GlobalEventBus
-import com.example.x_project_android.event.NavEvent
-import com.example.x_project_android.event.NavEventBus
 import kotlinx.coroutines.*
-
 
 object TweetDetailScreenDest {
     const val ROUTE = "tweet_detail"
@@ -26,23 +23,9 @@ class TweetDetailViewModel: ViewModel() {
 
     init {
         viewModelScope.launch {
-            launch {
-                NavEventBus.events.collect { event ->
-                    onNavEvent(event)
-                }
+            GlobalEventBus.events.collect { event ->
+                onGlobalEvent(event)
             }
-
-            launch {
-                GlobalEventBus.events.collect { event ->
-                    onGlobalEvent(event)
-                }
-            }
-        }
-    }
-
-    private fun onNavEvent(event: NavEvent) {
-        if (event is NavEvent.TweetDetail) {
-            setTweet(event.tweet)
         }
     }
 
@@ -52,15 +35,15 @@ class TweetDetailViewModel: ViewModel() {
             is GlobalEvent.Dislike -> dislikeTweet(event.tweetId)
             is GlobalEvent.LikeComment -> likeComment(event.commentId)
             is GlobalEvent.DislikeComment -> dislikeComment(event.commentId)
+            is GlobalEvent.AddComment -> addComment(event.comment)
             else -> {}
         }
     }
 
-
     private val _tweetId = mutableStateOf("")
     val tweetId: State<String> = _tweetId
 
-    private val  _tweet = mutableStateOf<Tweet?>(null)
+    private val _tweet = mutableStateOf<Tweet?>(null)
     val tweet: State<Tweet?> = _tweet
 
     private var _comments = mutableStateListOf<Comment>()
@@ -79,7 +62,7 @@ class TweetDetailViewModel: ViewModel() {
         _tweetId.value = id
     }
 
-    private fun setTweet(tweet: Tweet?) {
+    fun setTweet(tweet: Tweet?) {
         _tweet.value = tweet
     }
 
@@ -101,7 +84,7 @@ class TweetDetailViewModel: ViewModel() {
                 imageUri = imageTest,
             ),
             timestamp = System.currentTimeMillis() - 160 * 1000L,
-            likesCount = 10,
+            likesCount = 15,
             dislikesCount = 10,
         )
         delay(1000)
@@ -146,20 +129,11 @@ class TweetDetailViewModel: ViewModel() {
         _isLoadingComment.value = false
     }
 
-    fun addComment(comment : String, tweetId: String) {
-        val commentToAdd = Comment(
-            id = "comment_${System.currentTimeMillis()}",
-            tweetId = tweetId,
-            content = comment,
-            user = User(
-                id = "1",
-                pseudo = "Alice",
-                imageUri = imageTest,
-            ),
-            timestamp = System.currentTimeMillis(),
-        )
-        if( commentToAdd.id == null) return
-        _comments.add(commentToAdd)
+    private fun addComment(comment : Comment?) {
+        if(comment == null)return
+        if(comment.tweetId != _tweetId.value) return
+        _comments.add(comment)
+        if(_tweet.value?.id != comment.tweetId) return
         setTweet(
             tweet.value?.copy(
                 isCommented = true
