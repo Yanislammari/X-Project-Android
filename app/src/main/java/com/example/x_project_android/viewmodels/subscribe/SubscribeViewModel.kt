@@ -39,11 +39,6 @@ class SubscribeViewModel : ViewModel() {
     val isLoading: State<Boolean> = _isLoading
 
     private val _hasFetched = mutableStateOf(false)
-    val hasFetched: State<Boolean> = _hasFetched
-
-    fun setHasFetched(value: Boolean) {
-        _hasFetched.value = value
-    }
 
     suspend fun fetchSubscriptions() {
         if (_hasFetched.value) return
@@ -99,7 +94,7 @@ class SubscribeViewModel : ViewModel() {
                 )
             )
         )
-
+        _hasFetched.value = true
         _isLoading.value = false
     }
 
@@ -107,14 +102,9 @@ class SubscribeViewModel : ViewModel() {
         if (userId == null) return
 
         val index = _subscriptionsProfile.indexOfFirst { it.user.id == userId }
-
         if (index != -1) {
-            val tweet = _subscriptionsProfile[index]
-            val isNowSubscribed = !tweet.user.isSubscribed
-
-            if (!isNowSubscribed) {
-                _subscriptionsProfile.removeAt(index)
-            }
+            Log.d("SubscribeViewModel", "Unsubscribed from user with ID: $userId at index $index")
+            _subscriptionsProfile.removeAt(index)
         }
     }
 
@@ -122,7 +112,13 @@ class SubscribeViewModel : ViewModel() {
         if( user == null) return
         if (_subscriptionsProfile.any { it.user.id == user.id }) return
         _subscriptionsProfile.add(Tweet(
-            user = user
+            user = User(
+                id = user.id,
+                pseudo = user.pseudo,
+                imageUri = user.imageUri,
+                bio = user.bio,
+                isSubscribed = true
+            )
         ))
     }
 }

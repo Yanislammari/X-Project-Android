@@ -54,13 +54,13 @@ import com.example.x_project_android.R
 import com.example.x_project_android.data.models.Comment
 import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
-import com.example.x_project_android.event.GlobalEventBus
 import com.example.x_project_android.event.SendGlobalEvent
 import com.example.x_project_android.utils.getRelativeTime
 import com.example.x_project_android.utils.reduceText
 import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.view.compose.DividerHorizontal
 import com.example.x_project_android.view.compose.buildHighlightedText
+import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScreenDest
 import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailScreenDest
@@ -71,6 +71,7 @@ fun TweetScreen(
     navHostController: NavHostController,
     tweetsViewModel: TweetsViewModel,
     sharedTweetViewModel: SharedTweetViewModel,
+    sharedSubscribeViewModel: SharedSubscribeViewModel
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -117,13 +118,13 @@ fun TweetScreen(
                         onClick = {
                             focusManager.clearFocus()
                             sharedTweetViewModel.setTweetShared(tweet)
-                            Log.d("TweetScreen", "Navigating to TweetDetailScreen with tweet ID: ${sharedTweetViewModel.tweet?.likesCount}")
                             navHostController.navigate(TweetDetailScreenDest.ROUTE+"/${tweet.id}")
                         },
                         imageHeight = 150,
                         onPseudoClick = {
                             focusManager.clearFocus()
-                            navHostController.navigate(SubscriptionDetailScreenDest.ROUTE+"/${tweet.user.id}")
+                            sharedSubscribeViewModel.setUserShared(tweet.user)
+                            navHostController.navigate(SubscriptionDetailScreenDest.ROUTE + "/${tweet.user.id}")
                         },
                         onLike = {SendGlobalEvent.onLikeTweet(tweet.id)},
                         onDislike = {SendGlobalEvent.onDislikeTweet(tweet.id) }

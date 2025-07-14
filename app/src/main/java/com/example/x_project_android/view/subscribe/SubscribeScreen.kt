@@ -44,10 +44,7 @@ fun SubscribeScreen(
     sharedSubscribeViewModel: SharedSubscribeViewModel
 ) {
     LaunchedEffect(Unit) {
-        if(!subscribeViewModel.hasFetched.value) {
-            subscribeViewModel.fetchSubscriptions()
-            subscribeViewModel.setHasFetched(true)
-        }
+        subscribeViewModel.fetchSubscriptions()
     }
     Scaffold(
         topBar = {

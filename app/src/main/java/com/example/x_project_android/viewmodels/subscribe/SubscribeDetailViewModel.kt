@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.x_project_android.data.models.Comment
 import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
 import com.example.x_project_android.event.GlobalEvent
@@ -33,10 +34,10 @@ class SubscribeDetailViewModel: ViewModel() {
 
     private fun onEvent(event: GlobalEvent) {
         when (event) {
-            is GlobalEvent.Subscribe -> statusSubscribe(event.user.id, true)
-            is GlobalEvent.Unsubscribe -> statusSubscribe(event.userId,false)
             is GlobalEvent.Like -> likeTweet(event.tweetId)
             is GlobalEvent.Dislike -> dislikeTweet(event.tweetId)
+            is GlobalEvent.Unsubscribe -> statusSubscribe(event.userId,false)
+            is GlobalEvent.Subscribe -> statusSubscribe(event.user.id,true)
             else -> {}
         }
     }
@@ -49,6 +50,8 @@ class SubscribeDetailViewModel: ViewModel() {
 
     private var _tweetProfile = mutableStateListOf<Tweet>()
     val tweetProfile: List<Tweet> = _tweetProfile
+
+    private val _hasFetchedTweets = mutableStateOf(false)
 
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
@@ -68,6 +71,7 @@ class SubscribeDetailViewModel: ViewModel() {
     suspend fun fetchTweetFromUserId(
         userId: String,
     ) {
+        if(_hasFetchedTweets.value)return
         _isLoading.value = true
         kotlinx.coroutines.delay(500)
         _tweetProfile.addAll(
@@ -104,6 +108,7 @@ class SubscribeDetailViewModel: ViewModel() {
                 )
             )
         )
+        _hasFetchedTweets.value = true
         _isLoading.value = false
     }
 
@@ -126,7 +131,6 @@ class SubscribeDetailViewModel: ViewModel() {
     }
 
     private fun likeTweet(tweetId: String?){
-        Log.d("TweetDetailViewModel", "likeTweet called with tweetId: $tweetId")
         tweetId ?: return
         val index = _tweetProfile.indexOfFirst { it.id == tweetId }
         if (index == -1) return

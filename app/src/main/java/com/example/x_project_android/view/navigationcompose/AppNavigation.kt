@@ -30,13 +30,13 @@ import com.example.x_project_android.viewmodels.tweet.TweetsViewModel
 fun AppNavigation(
     navHostController: NavHostController,
     modifier: Modifier = Modifier,
-){
+) {
 
     val tweetsViewModel: TweetsViewModel = viewModel()
-    val sharedTweetViewModel : SharedTweetViewModel = viewModel()
+    val sharedTweetViewModel: SharedTweetViewModel = viewModel()
 
     val subscribeViewModel: SubscribeViewModel = viewModel()
-    val sharedSubscribeViewModel : SharedSubscribeViewModel = viewModel()
+    val sharedSubscribeViewModel: SharedSubscribeViewModel = viewModel()
 
     NavHost(
         modifier = modifier,
@@ -44,15 +44,27 @@ fun AppNavigation(
         startDestination = TweetScreenDest.route,
     ) {
         composable(TweetScreenDest.route) {
-            TweetScreen(navHostController,tweetsViewModel,sharedTweetViewModel)
+            TweetScreen(
+                navHostController,
+                tweetsViewModel,
+                sharedTweetViewModel,
+                sharedSubscribeViewModel
+            )
         }
         composable(SubscribeScreenDest.route) {
-            SubscribeScreen(navHostController, subscribeViewModel,sharedSubscribeViewModel)
+            SubscribeScreen(navHostController, subscribeViewModel, sharedSubscribeViewModel)
         }
 
         composable(
             route = TweetDetailScreenDest.FULLROUTE,
-            arguments = listOf(navArgument(TweetDetailScreenDest.TWEETIDARG) { type = NavType.StringType })
+            arguments = listOf(
+                navArgument(TweetDetailScreenDest.TWEETIDARG) { type = NavType.StringType },
+                navArgument("origin") {
+                    type = NavType.StringType
+                    nullable = false
+                    defaultValue = "default"
+                }
+            )
         ) { backStackEntry ->
             val tweetDetailViewModel: TweetDetailViewModel = viewModel()
             val tweetId = backStackEntry.arguments?.getString(TweetDetailScreenDest.TWEETIDARG)
@@ -66,12 +78,20 @@ fun AppNavigation(
             LaunchedEffect(tweetId) {
                 tweetDetailViewModel.setTweetId(tweetId)
             }
-            TweetDetailScreen(navHostController, tweetDetailViewModel,sharedTweetViewModel)
+            TweetDetailScreen(
+                navHostController,
+                tweetDetailViewModel,
+                sharedTweetViewModel,
+                sharedSubscribeViewModel,
+                origin = backStackEntry.arguments?.getString("origin") ?: "default"
+            )
         }
 
         composable(
             route = SubscriptionDetailScreenDest.FULLROUTE,
-            arguments = listOf(navArgument(SubscriptionDetailScreenDest.USERIDARG) { type = NavType.StringType })
+            arguments = listOf(navArgument(SubscriptionDetailScreenDest.USERIDARG) {
+                type = NavType.StringType
+            })
         ) {
             val subscribeDetailViewModel: SubscribeDetailViewModel = viewModel()
             val userId = it.arguments?.getString(SubscriptionDetailScreenDest.USERIDARG)
@@ -84,7 +104,12 @@ fun AppNavigation(
             LaunchedEffect(userId) {
                 subscribeDetailViewModel.setUserId(userId)
             }
-            SubscribeDetailScreen(navHostController,subscribeDetailViewModel,sharedSubscribeViewModel)
+            SubscribeDetailScreen(
+                navHostController,
+                subscribeDetailViewModel,
+                sharedTweetViewModel,
+                sharedSubscribeViewModel
+            )
         }
     }
 }

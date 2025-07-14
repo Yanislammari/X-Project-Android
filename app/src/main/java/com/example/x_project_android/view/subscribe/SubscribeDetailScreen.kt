@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,14 +39,19 @@ import com.example.x_project_android.view.compose.DisplayRoundImage
 import com.example.x_project_android.view.tweet.TweetCell
 import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscribeDetailViewModel
+import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailScreenDest
+import kotlinx.coroutines.launch
 
 @Composable
 fun SubscribeDetailScreen(
     navHostController: NavHostController,
     subscribeDetailViewModel: SubscribeDetailViewModel,
+    sharedTweetViewModel: SharedTweetViewModel,
     sharedSubscribeViewModel: SharedSubscribeViewModel
 ) {
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(Unit){
         if(subscribeDetailViewModel.userDetail.value == null) {
             if(sharedSubscribeViewModel.user == null) {
@@ -63,7 +70,8 @@ fun SubscribeDetailScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            state = listState
         ) {
             item {
                 DisplayProfileDetail(
@@ -94,12 +102,16 @@ fun SubscribeDetailScreen(
                             tweet = tweet,
                             searchValue = "",
                             onClick = {
-                                navHostController.currentBackStackEntry?.savedStateHandle?.set("tweet", tweet)
-                                navHostController.navigate(TweetDetailScreenDest.ROUTE+"/${tweet.id}")
+                                sharedTweetViewModel.setTweetShared(tweet)
+                                navHostController.navigate(TweetDetailScreenDest.ROUTE+"/${tweet.id}?origin=subscribe")
                             },
                             maxLength = 100,
                             imageHeight = 100,
-                            onPseudoClick = {},
+                            onPseudoClick = {
+                                coroutineScope.launch {
+                                    listState.animateScrollToItem(0)
+                                }
+                            },
                             onLike = {SendGlobalEvent.onLikeTweet(tweet.id)},
                             onDislike = {SendGlobalEvent.onDislikeTweet(tweet.id)},
                         )

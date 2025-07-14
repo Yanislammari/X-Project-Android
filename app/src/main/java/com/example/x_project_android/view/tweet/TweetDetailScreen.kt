@@ -30,6 +30,8 @@ import com.example.x_project_android.event.GlobalEvent
 import com.example.x_project_android.event.GlobalEventBus
 import com.example.x_project_android.event.SendGlobalEvent
 import com.example.x_project_android.view.compose.DisplayLoader
+import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
+import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScreenDest
 import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailViewModel
 
@@ -38,6 +40,8 @@ fun TweetDetailScreen(
     navHostController: NavHostController,
     tweetDetailViewModel: TweetDetailViewModel,
     sharedTweetViewModel: SharedTweetViewModel,
+    sharedSubscribeViewModel: SharedSubscribeViewModel,
+    origin : String = "default",
 ) {
     LaunchedEffect(tweetDetailViewModel.tweetId.value) {
         if (tweetDetailViewModel.tweet.value == null) {
@@ -65,7 +69,16 @@ fun TweetDetailScreen(
                         searchValue = "",
                         onClick = {},
                         maxLength = 1000,
-                        onPseudoClick = {},
+                        onPseudoClick = {
+                            Log.d("TweetDetailScreen", "Pseudo clicked: $origin")
+                            if(origin == "subscribe"){
+                                navHostController.popBackStack()
+                            }
+                            else{
+                                sharedSubscribeViewModel.setUserShared(tweet.user)
+                                navHostController.navigate(SubscriptionDetailScreenDest.ROUTE + "/${tweet.user.id}")
+                            }
+                        },
                         onLike = { SendGlobalEvent.onLikeTweet(tweet.id) },
                         onDislike = { SendGlobalEvent.onDislikeTweet(tweet.id) },
                     )
@@ -131,6 +144,10 @@ fun TweetDetailScreen(
                         comment = comment,
                         onLike = { SendGlobalEvent.onLikeComment(comment.id)},
                         onDislike = { SendGlobalEvent.onDislikeComment(comment.id) },
+                        onPseudoClick = {
+                            sharedSubscribeViewModel.setUserShared(comment.user)
+                            navHostController.navigate(SubscriptionDetailScreenDest.ROUTE + "/${comment.user.id}")
+                        }
                     )
                 }
             }
@@ -143,6 +160,7 @@ fun CommentCell(
     comment: Comment,
     onLike: () -> Unit,
     onDislike: () -> Unit,
+    onPseudoClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -153,7 +171,7 @@ fun CommentCell(
         DisplayPseudo(
             comment = comment,
             user = comment.user,
-            onClick = {}
+            onClick = onPseudoClick,
         )
         Text(text = comment.content ?: "", style = MaterialTheme.typography.bodyMedium)
         LikesDislikesRow(

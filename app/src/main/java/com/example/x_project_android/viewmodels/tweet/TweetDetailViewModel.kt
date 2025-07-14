@@ -16,10 +16,10 @@ object TweetDetailScreenDest {
     const val ROUTE = "tweet_detail"
     const val TWEETIDARG = "tweetId"
     private const val TWEETIDPLACEHOLDER = "{$TWEETIDARG}"
-    const val FULLROUTE = "$ROUTE/$TWEETIDPLACEHOLDER"
+    const val FULLROUTE = "$ROUTE/$TWEETIDPLACEHOLDER?origin={origin}"
 }
 
-class TweetDetailViewModel: ViewModel() {
+class TweetDetailViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
@@ -49,6 +49,8 @@ class TweetDetailViewModel: ViewModel() {
     private var _comments = mutableStateListOf<Comment>()
     val comments: List<Comment> = _comments
 
+    private val _hasFetchedComments = mutableStateOf(false)
+
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
@@ -67,7 +69,7 @@ class TweetDetailViewModel: ViewModel() {
     }
 
     fun setComment(newComment: String) {
-        if(newComment.length < 100) {
+        if (newComment.length < 100) {
             _comment.value = newComment
         }
     }
@@ -91,8 +93,9 @@ class TweetDetailViewModel: ViewModel() {
         _isLoading.value = false
     }
 
-    suspend fun fetchComments(tweetId:String? = _tweetId.value) {
+    suspend fun fetchComments(tweetId: String? = _tweetId.value) {
         if (tweetId == null) return
+        if (_hasFetchedComments.value) return
         _isLoadingComment.value = true
         delay(1000)
         _comments.clear()
@@ -123,17 +126,31 @@ class TweetDetailViewModel: ViewModel() {
                     timestamp = System.currentTimeMillis() - 50 * 1000L,
                     likesCount = 3,
                     dislikesCount = 1,
+                ),
+                Comment(
+                    id = "comment_3",
+                    tweetId = _tweetId.value,
+                    content = "Alice sub !",
+                    user = User(
+                        id = "1",
+                        pseudo = "Alice",
+                        imageUri = imageTest,
+                    ),
+                    timestamp = System.currentTimeMillis() - 50 * 1000L,
+                    likesCount = 3,
+                    dislikesCount = 1,
                 )
             )
         )
+        _hasFetchedComments.value = true
         _isLoadingComment.value = false
     }
 
-    private fun addComment(comment : Comment?) {
-        if(comment == null)return
-        if(comment.tweetId != _tweetId.value) return
+    private fun addComment(comment: Comment?) {
+        if (comment == null) return
+        if (comment.tweetId != _tweetId.value) return
         _comments.add(comment)
-        if(_tweet.value?.id != comment.tweetId) return
+        if (_tweet.value?.id != comment.tweetId) return
         setTweet(
             tweet.value?.copy(
                 isCommented = true
@@ -141,7 +158,7 @@ class TweetDetailViewModel: ViewModel() {
         )
     }
 
-    private fun likeTweet(tweetId: String?){
+    private fun likeTweet(tweetId: String?) {
         tweetId ?: return
         val oldTweet = _tweet.value ?: return
         if (oldTweet.id != tweetId) return
@@ -151,15 +168,21 @@ class TweetDetailViewModel: ViewModel() {
 
         val updatedTweet = oldTweet.copy(
             isDisliked = false,
-            dislikesCount = if (wasDisliked) maxOf(0, oldTweet.dislikesCount - 1) else oldTweet.dislikesCount,
+            dislikesCount = if (wasDisliked) maxOf(
+                0,
+                oldTweet.dislikesCount - 1
+            ) else oldTweet.dislikesCount,
             isLiked = !wasLiked,
-            likesCount = if (wasLiked) maxOf(0, oldTweet.likesCount - 1) else oldTweet.likesCount + 1
+            likesCount = if (wasLiked) maxOf(
+                0,
+                oldTweet.likesCount - 1
+            ) else oldTweet.likesCount + 1
         )
 
         setTweet(updatedTweet)
     }
 
-    private fun dislikeTweet(tweetId: String?){
+    private fun dislikeTweet(tweetId: String?) {
         tweetId ?: return
         val oldTweet = _tweet.value ?: return
         if (oldTweet.id != tweetId) return
@@ -169,7 +192,10 @@ class TweetDetailViewModel: ViewModel() {
 
         val updatedTweet = oldTweet.copy(
             isDisliked = !wasDisliked,
-            dislikesCount = if (wasDisliked) maxOf(0, oldTweet.dislikesCount - 1) else oldTweet.dislikesCount + 1,
+            dislikesCount = if (wasDisliked) maxOf(
+                0,
+                oldTweet.dislikesCount - 1
+            ) else oldTweet.dislikesCount + 1,
             isLiked = false,
             likesCount = if (wasLiked) maxOf(0, oldTweet.likesCount - 1) else oldTweet.likesCount
         )
@@ -177,7 +203,7 @@ class TweetDetailViewModel: ViewModel() {
         setTweet(updatedTweet)
     }
 
-    private fun likeComment(commentId: String?){
+    private fun likeComment(commentId: String?) {
         commentId ?: return
         val index = _comments.indexOfFirst { it.id == commentId }
         if (index == -1) return
@@ -188,15 +214,21 @@ class TweetDetailViewModel: ViewModel() {
 
         val updatedComment = oldComment.copy(
             isDisliked = false,
-            dislikesCount = if (wasDisliked) maxOf(0, oldComment.dislikesCount - 1) else oldComment.dislikesCount,
+            dislikesCount = if (wasDisliked) maxOf(
+                0,
+                oldComment.dislikesCount - 1
+            ) else oldComment.dislikesCount,
             isLiked = !wasLiked,
-            likesCount = if (wasLiked) maxOf(0, oldComment.likesCount - 1) else oldComment.likesCount + 1
+            likesCount = if (wasLiked) maxOf(
+                0,
+                oldComment.likesCount - 1
+            ) else oldComment.likesCount + 1
         )
 
         _comments[index] = updatedComment
     }
 
-    private fun dislikeComment(commentId: String?){
+    private fun dislikeComment(commentId: String?) {
         commentId ?: return
         val index = _comments.indexOfFirst { it.id == commentId }
         if (index == -1) return
@@ -207,9 +239,15 @@ class TweetDetailViewModel: ViewModel() {
 
         val updatedComment = oldComment.copy(
             isDisliked = !wasDisliked,
-            dislikesCount = if (wasDisliked) maxOf(0, oldComment.dislikesCount - 1) else oldComment.dislikesCount + 1,
+            dislikesCount = if (wasDisliked) maxOf(
+                0,
+                oldComment.dislikesCount - 1
+            ) else oldComment.dislikesCount + 1,
             isLiked = false,
-            likesCount = if (wasLiked) maxOf(0, oldComment.likesCount - 1) else oldComment.likesCount
+            likesCount = if (wasLiked) maxOf(
+                0,
+                oldComment.likesCount - 1
+            ) else oldComment.likesCount
         )
 
         _comments[index] = updatedComment

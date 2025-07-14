@@ -33,7 +33,7 @@ class TweetsViewModel: ViewModel() {
             is GlobalEvent.AddTweet -> addTweet(event.tweet)
             is GlobalEvent.Subscribe -> changeSubscribeStateFromUser(event.user.id,true)
             is GlobalEvent.Unsubscribe -> changeSubscribeStateFromUser(event.userId,false)
-            is GlobalEvent.DislikeComment -> {} // Would be fetch from API so no need for update, but detail will need it
+            is GlobalEvent.DislikeComment -> {}
             is GlobalEvent.LikeComment -> {}
         }
     }
@@ -64,7 +64,7 @@ class TweetsViewModel: ViewModel() {
                     content = "Voici mon chat Miaou !",
                     imageUri = imageTest,
                     user = User(
-                        id = "15",
+                        id = "27",
                         bio = "Je suis un chat qui aime les croquettes et dormir.",
                         pseudo = "Ta daronne",
                         imageUri = imageTest,
@@ -79,7 +79,7 @@ class TweetsViewModel: ViewModel() {
                     content = "Un tres long texte chiaUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaajUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjnt a afffafhdjsjfjdsjfdkjsjdsjkfkjdskjfdskjkjfdskjfdskjkjfdskjfkjfdjkfskjfkjdsjjfjfjfjfjfjjfjfjfjfjlfdfdjskfslkfd joiezfhouzehfoiezhfoi hezofhzeo fezof hezoih",
 
                     user = User(
-                        id = "2",
+                        id = "26",
                         pseudo = "Exactemenf 25 charachter je le jure enfin je crois",
                         imageUri = imageTest,
                         isSubscribed = true,
@@ -94,7 +94,7 @@ class TweetsViewModel: ViewModel() {
                     content = "Un tres long texte chiant a afffafhdjsjfjdsjfdkjsjdsjkfkjdskjfdskjkjfdskjfdskjkjfdskjfkjfdjkfskjfkjdsjjfjfjfjfjfjjfjfjfjfjlfdfdjskfslkfd joiezfhouzehfoiezhfoi hezofhzeo fezof hezoih",
                     imageUri = imageTest,
                     user = User(
-                        id = "3",
+                        id = "25",
                         pseudo = "To unsu",
                         imageUri = imageTest,
                         isSubscribed = true,
