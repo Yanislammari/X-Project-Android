@@ -54,7 +54,7 @@ class SubscribeViewModel : ViewModel() {
                         id = "1",
                         pseudo = "Alice",
                         imageUri = imageTest,
-                        bio = "J'adore les chats et les chiens !",
+                        bio = "J'adore les chats et les chiens long text sa mere en plus de ca!",
                         isSubscribed = true,
                     ),
                     timestamp = System.currentTimeMillis() - 160 * 1000L,
@@ -83,6 +83,7 @@ class SubscribeViewModel : ViewModel() {
                     imageUri = imageTest,
                     user = User(
                         id = "3",
+                        bio = "01234567890123456789012345678901234567890123456789012345678",
                         pseudo = "Exactemenf 25 charachter je le jure enfin je crois",
                         imageUri = imageTest,
                         isSubscribed = true,
