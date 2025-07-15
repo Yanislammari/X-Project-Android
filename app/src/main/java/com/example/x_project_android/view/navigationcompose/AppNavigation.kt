@@ -21,6 +21,7 @@ import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewMod
 import com.example.x_project_android.viewmodels.subscribe.SubscribeDetailViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscribeViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScreenDest
+import com.example.x_project_android.viewmodels.tweet.AddTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailScreenDest
 import com.example.x_project_android.viewmodels.tweet.TweetDetailViewModel
@@ -31,6 +32,7 @@ fun AppNavigation(
     navHostController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
+    val addTweetViewModel : AddTweetViewModel = viewModel()
 
     val tweetsViewModel: TweetsViewModel = viewModel()
     val sharedTweetViewModel: SharedTweetViewModel = viewModel()
