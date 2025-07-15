@@ -15,12 +15,14 @@ import com.example.x_project_android.view.compose.navbar.SubscribeScreenDest
 import com.example.x_project_android.view.compose.navbar.TweetScreenDest
 import com.example.x_project_android.view.subscribe.SubscribeDetailScreen
 import com.example.x_project_android.view.subscribe.SubscribeScreen
+import com.example.x_project_android.view.tweet.AddTweetScreen
 import com.example.x_project_android.view.tweet.TweetDetailScreen
 import com.example.x_project_android.view.tweet.TweetScreen
 import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscribeDetailViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscribeViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScreenDest
+import com.example.x_project_android.viewmodels.tweet.AddTweetScreenDest
 import com.example.x_project_android.viewmodels.tweet.AddTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailScreenDest
@@ -55,6 +57,10 @@ fun AppNavigation(
         }
         composable(SubscribeScreenDest.route) {
             SubscribeScreen(navHostController, subscribeViewModel, sharedSubscribeViewModel)
+        }
+
+        composable(AddTweetScreenDest.ROUTE){
+            AddTweetScreen(navHostController,addTweetViewModel)
         }
 
         composable(

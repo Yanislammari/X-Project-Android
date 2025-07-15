@@ -70,7 +70,6 @@ fun TweetDetailScreen(
                         onClick = {},
                         maxLength = 1000,
                         onPseudoClick = {
-                            Log.d("TweetDetailScreen", "Pseudo clicked: $origin")
                             if(origin == "subscribe"){
                                 navHostController.popBackStack()
                             }

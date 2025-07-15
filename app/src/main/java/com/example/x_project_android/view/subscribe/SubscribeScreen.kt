@@ -49,7 +49,7 @@ fun SubscribeScreen(
     Scaffold(
         topBar = {
             Text(
-                text = "Subscriptions",
+                text = stringResource(R.string.subscribescreen_title),
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxWidth(),

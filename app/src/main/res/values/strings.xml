@@ -41,4 +41,6 @@
     <string name="subdetailscreen_error_no_tweet">No tweets found</string>
     <string name="subscribedetailscreen_content_desc_biodisplay_colapse">Collapse</string>
     <string name="expand">Expand</string>
+    <string name="tweetscreen_content_add_tweet">Compose tweet</string>
+    <string name="subscribescreen_title">Subscriptions</string>
 </resources>

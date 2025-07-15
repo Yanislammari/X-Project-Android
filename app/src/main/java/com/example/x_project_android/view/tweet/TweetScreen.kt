@@ -25,8 +25,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -62,6 +64,7 @@ import com.example.x_project_android.view.compose.DividerHorizontal
 import com.example.x_project_android.view.compose.buildHighlightedText
 import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScreenDest
+import com.example.x_project_android.viewmodels.tweet.AddTweetScreenDest
 import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailScreenDest
 import com.example.x_project_android.viewmodels.tweet.TweetsViewModel
@@ -80,58 +83,75 @@ fun TweetScreen(
     }
 
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
-                detectTapGestures(onTap = {
-                    focusManager.clearFocus()
-                })
+                detectTapGestures { focusManager.clearFocus() }
             }
-    ) {
-        SimpleSearchBar(
-            query = tweetsViewModel.searchText.value,
-            onQueryChange = { tweetsViewModel.setSearchText(it) },
+    ){
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(8.dp),
-        )
-
-        if (tweetsViewModel.isLoading.value) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                DisplayLoader()
-            }
-        } else {
-            LazyColumn(
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        focusManager.clearFocus()
+                    })
+                }
+        ) {
+            SimpleSearchBar(
+                query = tweetsViewModel.searchText.value,
+                onQueryChange = { tweetsViewModel.setSearchText(it) },
                 modifier = Modifier
-                    .fillMaxSize()
-                    .weight(1f)
-            ) {
-                items(tweetsViewModel.getTweetsBySearchValue()) { tweet ->
-                    TweetCell(
-                        tweet = tweet,
-                        searchValue = tweetsViewModel.searchText.value,
-                        onClick = {
-                            focusManager.clearFocus()
-                            sharedTweetViewModel.setTweetShared(tweet)
-                            navHostController.navigate(TweetDetailScreenDest.ROUTE+"/${tweet.id}")
-                        },
-                        imageHeight = 150,
-                        onPseudoClick = {
-                            focusManager.clearFocus()
-                            sharedSubscribeViewModel.setUserShared(tweet.user)
-                            navHostController.navigate(SubscriptionDetailScreenDest.ROUTE + "/${tweet.user.id}")
-                        },
-                        onLike = {SendGlobalEvent.onLikeTweet(tweet.id)},
-                        onDislike = {SendGlobalEvent.onDislikeTweet(tweet.id) }
-                    )
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(8.dp),
+            )
+
+            if (tweetsViewModel.isLoading.value) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    DisplayLoader()
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f)
+                ) {
+                    items(tweetsViewModel.getTweetsBySearchValue()) { tweet ->
+                        TweetCell(
+                            tweet = tweet,
+                            searchValue = tweetsViewModel.searchText.value,
+                            onClick = {
+                                focusManager.clearFocus()
+                                sharedTweetViewModel.setTweetShared(tweet)
+                                navHostController.navigate(TweetDetailScreenDest.ROUTE + "/${tweet.id}")
+                            },
+                            imageHeight = 150,
+                            onPseudoClick = {
+                                focusManager.clearFocus()
+                                sharedSubscribeViewModel.setUserShared(tweet.user)
+                                navHostController.navigate(SubscriptionDetailScreenDest.ROUTE + "/${tweet.user.id}")
+                            },
+                            onLike = { SendGlobalEvent.onLikeTweet(tweet.id) },
+                            onDislike = { SendGlobalEvent.onDislikeTweet(tweet.id) }
+                        )
+                    }
                 }
             }
         }
+        DisplayAddTweetFloating(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            onClick = {
+                focusManager.clearFocus()
+                navHostController.navigate(AddTweetScreenDest.ROUTE)
+            }
+        )
     }
 }
 
@@ -381,6 +401,24 @@ fun SimpleSearchBar(
             }
         }
     )
+}
+
+@Composable
+fun DisplayAddTweetFloating(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+){
+    FloatingActionButton(
+        onClick = onClick,
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor   = MaterialTheme.colorScheme.onPrimary,
+        modifier = modifier
+    ) {
+        Icon(
+            imageVector = Icons.Default.Create,
+            contentDescription = stringResource(R.string.tweetscreen_content_add_tweet)
+        )
+    }
 }
 
 
