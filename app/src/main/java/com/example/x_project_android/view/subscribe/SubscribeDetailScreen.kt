@@ -11,23 +11,36 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.x_project_android.R
@@ -52,12 +65,11 @@ fun SubscribeDetailScreen(
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    LaunchedEffect(Unit){
-        if(subscribeDetailViewModel.userDetail.value == null) {
-            if(sharedSubscribeViewModel.user == null) {
+    LaunchedEffect(Unit) {
+        if (subscribeDetailViewModel.userDetail.value == null) {
+            if (sharedSubscribeViewModel.user == null) {
                 // fetch using id
-            }
-            else{
+            } else {
                 subscribeDetailViewModel.setUserDetail(sharedSubscribeViewModel.user)
             }
         }
@@ -82,9 +94,6 @@ fun SubscribeDetailScreen(
                 )
             }
             item {
-                HorizontalDivider()
-            }
-            item {
                 if (subscribeDetailViewModel.isLoading.value) {
                     DisplayLoader()
                 } else if (subscribeDetailViewModel.tweetProfile.isEmpty()) {
@@ -103,7 +112,7 @@ fun SubscribeDetailScreen(
                             searchValue = "",
                             onClick = {
                                 sharedTweetViewModel.setTweetShared(tweet)
-                                navHostController.navigate(TweetDetailScreenDest.ROUTE+"/${tweet.id}?origin=subscribe")
+                                navHostController.navigate(TweetDetailScreenDest.ROUTE + "/${tweet.id}?origin=subscribe")
                             },
                             maxLength = 100,
                             imageHeight = 100,
@@ -112,8 +121,8 @@ fun SubscribeDetailScreen(
                                     listState.animateScrollToItem(0)
                                 }
                             },
-                            onLike = {SendGlobalEvent.onLikeTweet(tweet.id)},
-                            onDislike = {SendGlobalEvent.onDislikeTweet(tweet.id)},
+                            onLike = { SendGlobalEvent.onLikeTweet(tweet.id) },
+                            onDislike = { SendGlobalEvent.onDislikeTweet(tweet.id) },
                         )
                     }
                 }
@@ -128,25 +137,22 @@ fun SubscribeDetailScreen(
 @Composable
 fun DisplayProfileDetail(
     user: User?,
-    onClick : ()->Unit
+    onClick: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
     val screenWidth = configuration.screenWidthDp.dp
-    val fixedHeight = screenHeight / 1.5f
     val modifierText =
         Modifier.padding(top = 16.dp, bottom = 16.dp, start = screenWidth / 2.5f, end = 8.dp)
 
+    var isExpanded by remember { mutableStateOf(false) }
+
     Box(
-        modifier = Modifier
-            .height(fixedHeight)   // Limit height to one third of screen height
-            .padding(bottom = 16.dp)
-            .fillMaxWidth()
-    ) {
+        modifier = Modifier.fillMaxSize()
+    ){
         Column {
             Box(
                 modifier = Modifier
-                    .weight(0.25f)
+                    .height(75.dp)
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.BottomCenter
@@ -159,7 +165,7 @@ fun DisplayProfileDetail(
             }
             Box(
                 modifier = Modifier
-                    .weight(1f)
+                    .height(100.dp)
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.TopCenter
@@ -170,39 +176,120 @@ fun DisplayProfileDetail(
                     modifier = modifierText,
                 )
             }
+            DisplayDynamicBio(
+                screenWidth = screenWidth,
+                isExpanded = isExpanded,
+                onClick = {
+                    isExpanded = !isExpanded
+                }
+            )
         }
-
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Top,
-                modifier = Modifier.padding(start = 16.dp, bottom = screenHeight / 2.9f)
-            ) {
-                DisplayRoundImage(
-                    uri = user?.imageUri,
-                    size = 100
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                HorizontalDivider(
-                    modifier = Modifier
-                        .width(screenWidth / 4)
-                        .padding(bottom = 16.dp),
-                )
-                Text(
-                    text = if (user?.isSubscribed == true) "Unsubscribe" else "Subscribe",
-                    color = if (user?.isSubscribed == true) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .clickable(
-                            onClick = onClick,
-                        )
-                )
-            }
-        }
-
+        DisplayProfileImage(
+            user = user,
+            screenWidth = screenWidth,
+            onClick = onClick
+        )
     }
+}
+
+@Composable
+fun DisplayProfileImage(
+    user: User?,
+    screenWidth: Dp,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Top,
+        modifier = Modifier.padding(start = 16.dp, top = 25.dp)
+    ) {
+        DisplayRoundImage(
+            uri = user?.imageUri,
+            size = 100
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        HorizontalDivider(
+            modifier = Modifier
+                .width(screenWidth / 4)
+                .padding(bottom = 16.dp),
+        )
+        Text(
+            text = if (user?.isSubscribed == true) "Unsubscribe" else "Subscribe",
+            color = if (user?.isSubscribed == true) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .clickable(
+                    onClick = onClick,
+                )
+        )
+    }
+}
+
+@Composable
+fun DisplayDynamicBio(
+    screenWidth: Dp,
+    isExpanded: Boolean,
+    onClick: () -> Unit
+){
+    val dividerSize = screenWidth / 2.7f
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .clickable {
+                onClick()
+            }
+    ) {
+        HorizontalDivider(
+            modifier = Modifier
+                .width(dividerSize)
+                .align(Alignment.CenterStart)
+        )
+        HorizontalDivider(
+            modifier = Modifier
+                .width(dividerSize)
+                .align(Alignment.CenterEnd)
+        )
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .background(MaterialTheme.colorScheme.primary, shape = CircleShape)
+                .align(Alignment.Center)
+        ) {
+            ExpandableIcon(
+                isExpanded = isExpanded,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+    }
+}
+
+@Composable
+fun ExpandableIcon(
+    isExpanded: Boolean,
+    modifier: Modifier
+) {
+    val icon = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown
+    Icon(
+        imageVector = icon,
+        contentDescription = if (isExpanded)
+            stringResource(R.string.subscribedetailscreen_content_desc_biodisplay_colapse)
+            else stringResource(R.string.expand),
+        tint = Color.White,
+        modifier = modifier
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DisplayProfilePreview() {
+    val user = User(
+        pseudo = "John Doe aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        bio = "This is a sample bio that might be quite long, but we’ll limit it for display purposes.",
+        imageUri = null,
+        isSubscribed = false
+    )
+
+    DisplayProfileDetail(user = user, onClick = {})
 }
 

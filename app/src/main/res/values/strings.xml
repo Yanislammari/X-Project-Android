@@ -39,4 +39,6 @@
     <string name="tweetdetailscreen_error">Tweet not found</string>
     <string name="subscribescreen_no_tweet_error">No subscriptions found</string>
     <string name="subdetailscreen_error_no_tweet">No tweets found</string>
+    <string name="subscribedetailscreen_content_desc_biodisplay_colapse">Collapse</string>
+    <string name="expand">Expand</string>
 </resources>
