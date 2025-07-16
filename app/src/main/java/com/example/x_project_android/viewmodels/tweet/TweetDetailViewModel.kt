@@ -10,6 +10,7 @@ import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
 import com.example.x_project_android.event.GlobalEvent
 import com.example.x_project_android.event.GlobalEventBus
+import com.example.x_project_android.event.SendGlobalEvent
 import kotlinx.coroutines.*
 
 object TweetDetailScreenDest {
@@ -251,5 +252,17 @@ class TweetDetailViewModel : ViewModel() {
         )
 
         _comments[index] = updatedComment
+    }
+
+    fun addComment(){
+        val comment = Comment(
+            id = "random_"+System.currentTimeMillis(),
+            tweetId = _tweetId.value,
+            content = _comment.value,
+            user = _tweet.value?.user!!,
+            timestamp = System.currentTimeMillis(),
+        )
+        SendGlobalEvent.onAddComment(_tweetId.value, comment)
+        setComment("")
     }
 }

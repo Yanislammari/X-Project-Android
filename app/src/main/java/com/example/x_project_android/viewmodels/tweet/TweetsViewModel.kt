@@ -119,7 +119,7 @@ class TweetsViewModel: ViewModel() {
     }
 
     private fun addTweet(tweet: Tweet) {
-        _tweets.add(tweet)
+        _tweets.add(0, tweet)
     }
 
     private fun likeTweet(tweetId: String?){

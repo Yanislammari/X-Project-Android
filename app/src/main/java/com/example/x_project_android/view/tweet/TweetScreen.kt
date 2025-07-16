@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,16 +24,21 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +52,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -277,6 +285,9 @@ fun LikesDislikesRow(
     onLike: () -> Unit,
     onDislike: () -> Unit
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
+    val textLikeColor = if (isLiked) Color(0xFF26A69A) else if (isDarkTheme) Color.White else Color.Black
+    val textDislikeColor = if (isDisliked) Color(0xFFEF5350) else if (isDarkTheme) Color.White else Color.Black
     val interactionSourceLike = remember { MutableInteractionSource() }
     val interactionSourceDislike = remember { MutableInteractionSource() }
     Row(
@@ -311,7 +322,7 @@ fun LikesDislikesRow(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "$likesCount",
-                color = if (isLiked) Color(0xFF26A69A) else Color.Black,
+                color = textLikeColor,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
             )
         }
@@ -344,63 +355,65 @@ fun LikesDislikesRow(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "$dislikesCount",
-                color = if (isDisliked) Color(0xFFEF5350) else Color.Black,
+                color = textDislikeColor,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
             )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SimpleSearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
-
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        label = {
-            Text(
-                text = stringResource(R.string.tweetscreen_placeholder_search),
-                style = MaterialTheme.typography.bodySmall
-            )
-        },
-        modifier = modifier
-            .padding(horizontal = 8.dp)
-            .clip(RoundedCornerShape(16.dp)),
-        shape = RoundedCornerShape(16.dp),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-        singleLine = true,
-        keyboardActions = KeyboardActions(
-            onDone = {
-                focusManager.clearFocus()
-            }
-        ),
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = stringResource(R.string.tweetscreen_icon_search_description),
-                modifier = Modifier.clickable {
-                    focusManager.clearFocus()
-                }
-            )
-        },
-        trailingIcon = {
-            if (query.isNotBlank()) {
-                Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = stringResource(R.string.tweetscreen_icon_description_clear),
-                    modifier = Modifier.clickable {
-                        onQueryChange("")
-                        focusManager.clearFocus()
-                    }
+    Box(
+        modifier
+    ) {
+        SearchBar(
+            modifier = Modifier
+                .align(Alignment.TopCenter),
+            inputField = {
+                SearchBarDefaults.InputField(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    placeholder = { Text(stringResource(R.string.tweetscreen_placeholder_search)) },
+                    expanded = false,
+                    onExpandedChange = {},
+                    onSearch = {onQueryChange(it)},
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = stringResource(R.string.tweetscreen_icon_search_description),
+                            modifier = Modifier.clickable {
+                                focusManager.clearFocus()
+                            }
+                        )
+                    },
+                    trailingIcon = {
+                        if (query.isNotBlank()) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = stringResource(R.string.tweetscreen_icon_description_clear),
+                                modifier = Modifier.clickable {
+                                    onQueryChange("")
+                                    focusManager.clearFocus()
+                                }
+                            )
+                        }
+                    },
                 )
-            }
+            },
+            expanded = false,
+            onExpandedChange = {},
+            shadowElevation = 20.dp,
+        ){
+
         }
-    )
+    }
 }
 
 @Composable

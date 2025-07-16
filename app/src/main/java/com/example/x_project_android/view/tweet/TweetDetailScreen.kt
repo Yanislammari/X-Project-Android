@@ -1,6 +1,5 @@
 package com.example.x_project_android.view.tweet
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -8,7 +7,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,13 +22,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.x_project_android.R
 import com.example.x_project_android.data.models.Comment
-import com.example.x_project_android.event.GlobalEvent
-import com.example.x_project_android.event.GlobalEventBus
 import com.example.x_project_android.event.SendGlobalEvent
 import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
@@ -102,25 +102,19 @@ fun TweetDetailScreen(
                         singleLine = false,
                         trailingIcon = {
                             Icon(
-                                imageVector = Icons.Default.Send,
+                                imageVector = Icons.AutoMirrored.Filled.Send,
                                 contentDescription = "Send Comment",
                                 tint = if (tweetDetailViewModel.comment.value.isEmpty()) Color.Gray else MaterialTheme.colorScheme.primary,
                                 modifier = Modifier
                                     .clickable(enabled = tweetDetailViewModel.comment.value.isNotEmpty()) {
-                                        val comment = Comment(
-                                            id = "random_"+System.currentTimeMillis(),
-                                            tweetId = tweetDetailViewModel.tweetId.value,
-                                            content = tweetDetailViewModel.comment.value,
-                                            user = tweetDetailViewModel.tweet.value?.user ?: return@clickable,
-                                            timestamp = System.currentTimeMillis(),
-                                        )
-
-                                        GlobalEventBus.sendEvent(GlobalEvent.AddComment(comment))
-                                        tweetDetailViewModel.setComment("")
+                                        tweetDetailViewModel.addComment()
                                     }
                             )
                         },
                         colors = OutlinedTextFieldDefaults.colors( unfocusedContainerColor =  MaterialTheme.colorScheme.surface, focusedContainerColor = MaterialTheme.colorScheme.surface ),
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences
+                        )
                     )
                 }
             }
