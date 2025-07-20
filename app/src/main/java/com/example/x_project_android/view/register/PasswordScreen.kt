@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.x_project_android.R
 import com.example.x_project_android.view.compose.DisplayLoader
+import com.example.x_project_android.view.navigationcompose.navigateDeleteAllRoute
 import com.example.x_project_android.viewmodels.RegisterUIEvent
 import com.example.x_project_android.viewmodels.RegisterViewModel
 
@@ -37,11 +38,12 @@ fun PasswordScreen(
         registerViewModel.uiEvent.collect { event ->
             when (event) {
                 is RegisterUIEvent.NavigateTo -> {
-                    navHostController.navigate("register/password")
+                    navHostController.navigateDeleteAllRoute("home")
                 }
 
                 is RegisterUIEvent.ShowError -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                    registerViewModel.setLoading(false)
                 }
             }
         }
@@ -68,7 +70,7 @@ fun PasswordScreen(
                     confirmPassword = registerViewModel.confirmPassword.value,
                     onPasswordChange = registerViewModel::setPassword,
                     onConfirmPasswordChange = registerViewModel::setConfirmPassword,
-                    onSubmit = registerViewModel::tryRegister
+                    onSubmit = { registerViewModel.tryRegister(context) }
                 )
             }
         }

@@ -4,3 +4,7 @@ data class LoginDto(
     val email: String,
     val password: String
 )
+
+data class LoginResponseDto(
+    val token : String?
+)

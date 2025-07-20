@@ -1,6 +1,7 @@
 package com.example.x_project_android.view
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,9 +18,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.x_project_android.R
+import com.example.x_project_android.repositories.AuthRepository
 import com.example.x_project_android.view.navigationcompose.navigateDeleteAllRoute
 import com.example.x_project_android.ui.theme.AppTheme
 import com.example.x_project_android.view.compose.navbar.TweetScreenDest
+import com.example.x_project_android.viewmodels.LoginUiEvent
 import com.example.x_project_android.viewmodels.LoginViewModel
 
 @Composable
@@ -28,6 +31,18 @@ fun LoginView(
     navHostController: NavHostController
 ) {
     val context = LocalContext.current
+    LaunchedEffect(Unit){
+        viewModel.uiEvent.collect{event ->
+            when(event){
+                is LoginUiEvent.Success->{
+                    navHostController.navigateDeleteAllRoute("home")
+                }
+                is LoginUiEvent.Error -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -62,7 +77,6 @@ fun LoginView(
             Button(
                 onClick = {
                     viewModel.sendLoginRequest()
-                    navHostController.navigateDeleteAllRoute("home")
                 },
                 modifier = Modifier.fillMaxWidth()
                     .padding(top = 16.dp, bottom = 16.dp),
@@ -85,7 +99,9 @@ fun LoginView(
 fun LoginPreview() {
     AppTheme {
         LoginView(
-            viewModel = LoginViewModel(),
+            viewModel = LoginViewModel(
+                authRepository = AuthRepository()
+            ),
             navHostController = NavHostController(LocalContext.current)
         )
     }

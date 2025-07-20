@@ -43,4 +43,8 @@
     <string name="expand">Expand</string>
     <string name="tweetscreen_content_add_tweet">Compose tweet</string>
     <string name="subscribescreen_title">Subscriptions</string>
+    <string name="an_error_occurred_while_reading_the_image">An error occurred while reading the image.</string>
+    <string name="registration_successful_token_saved">Registration successful, token saved.</string>
+    <string name="an_error_occurred_during_registration">An error occurred during registration.</string>
+    <string name="request_failed_please_try_again_later">Request failed, please try again later.</string>
 </resources>

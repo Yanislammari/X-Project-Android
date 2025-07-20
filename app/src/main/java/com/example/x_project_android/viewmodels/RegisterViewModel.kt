@@ -1,20 +1,29 @@
 package com.example.x_project_android.viewmodels
 
+import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.x_project_android.R
 import com.example.x_project_android.data.dto.UserRegistrationDto
-import com.google.gson.Gson
+import com.example.x_project_android.repositories.RegisterRepository
+import com.example.x_project_android.utils.byteArrayToRequestBody
+import com.example.x_project_android.utils.uriToByteArray
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 
 fun String.isEmail(): Boolean {
     return android.util.Patterns.EMAIL_ADDRESS.matcher(this).matches()
 }
 
-class RegisterViewModel : ViewModel() {
+fun String.toRequestBody() = this.toRequestBody("text/plain".toMediaTypeOrNull())
+
+class RegisterViewModel(
+    private val registerRepository: RegisterRepository = RegisterRepository()
+) : ViewModel() {
 
     private val _uiEvent = Channel<RegisterUIEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -39,6 +48,10 @@ class RegisterViewModel : ViewModel() {
 
     private var _confirmPassword = mutableStateOf("")
     val confirmPassword: State<String> get() = _confirmPassword
+
+    fun setLoading(state : Boolean){
+        _isLoading.value = state
+    }
 
     fun setBio(newBio: String) {
         if (newBio.length <= 250) {
@@ -98,24 +111,49 @@ class RegisterViewModel : ViewModel() {
         }
     }
     
-    fun tryRegister(){
+    fun tryRegister(context : Context){
         if(_password.value.isBlank() || _confirmPassword.value.isBlank()){
             _uiEvent.trySend(RegisterUIEvent.ShowError(R.string.registerviewmodel_error_passwords_empty))
+            return
         }
         else if(_password.value != _confirmPassword.value){
             _uiEvent.trySend(RegisterUIEvent.ShowError(R.string.registerviewmodel_error_password_unmatch))
+            return
         }
-        val json = Gson().toJson(UserRegistrationDto(
+        val bytes = uriToByteArray(context, _imageUri.value ?: return)
+        if(bytes == null){
+            _uiEvent.trySend(RegisterUIEvent.ShowError(R.string.an_error_occurred_while_reading_the_image))
+            return
+        }
+        val profilePicture = byteArrayToRequestBody(bytes, "image/jpeg")
+
+        val userRegister = UserRegistrationDto(
             bio = _bio.value,
             pseudo = _pseudo.value,
-            imageUri = _imageUri.value?.toString(),
             email = _email.value,
-            password = _password.value,
-        ))
-        println(json)
+            password = _password.value
+        )
+        registerRepository.postRegister(userRegister,profilePicture){result ->
+            when(result){
+                is RegisterResult.Success -> {
+                    _uiEvent.trySend(RegisterUIEvent.NavigateTo)
+                    _isLoading.value = false
+                }
+                is RegisterResult.Failure -> {
+                    _uiEvent.trySend(RegisterUIEvent.ShowError(result.message))
+                    _isLoading.value = false
+                }
+            }
+        }
         _isLoading.value = true
     }
 }
+
+sealed class RegisterResult {
+    data class Success(val message: Int) : RegisterResult()
+    data class Failure(val message: Int) : RegisterResult()
+}
+
 
 sealed class RegisterUIEvent {
     data object NavigateTo : RegisterUIEvent()
