@@ -28,6 +28,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -225,8 +226,8 @@ fun AddContent(
                 }
             },
             keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences  // <-- This line
-            )
+                capitalization = KeyboardCapitalization.Sentences
+            ),
         )
     }
 }
