@@ -11,7 +11,10 @@ import com.example.x_project_android.data.models.User
 import com.example.x_project_android.event.GlobalEvent
 import com.example.x_project_android.event.GlobalEventBus
 import com.example.x_project_android.event.SendGlobalEvent
+import com.example.x_project_android.repositories.TweetRepository
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 
 object TweetDetailScreenDest {
     const val ROUTE = "tweet_detail"
@@ -20,7 +23,9 @@ object TweetDetailScreenDest {
     const val FULLROUTE = "$ROUTE/$TWEETIDPLACEHOLDER?origin={origin}"
 }
 
-class TweetDetailViewModel : ViewModel() {
+class TweetDetailViewModel(
+    private val tweetRepository: TweetRepository = TweetRepository()
+) : ViewModel() {
 
     init {
         viewModelScope.launch {
@@ -50,13 +55,14 @@ class TweetDetailViewModel : ViewModel() {
     private var _comments = mutableStateListOf<Comment>()
     val comments: List<Comment> = _comments
 
-    private val _hasFetchedComments = mutableStateOf(false)
-
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
-    private val _isLoadingComment = mutableStateOf(false)
-    val isLoadingComment: State<Boolean> = _isLoadingComment
+    private val _state = mutableStateOf(CommentState.Initial)
+    val state: State<CommentState> = _state
+
+    private val _uiEvent = Channel<CommentUiEvent>()
+    val uiEvent = _uiEvent.receiveAsFlow()
 
     private val _comment = mutableStateOf("")
     val comment: State<String> = _comment
@@ -94,57 +100,25 @@ class TweetDetailViewModel : ViewModel() {
         _isLoading.value = false
     }
 
-    suspend fun fetchComments(tweetId: String? = _tweetId.value) {
-        if (tweetId == null) return
-        if (_hasFetchedComments.value) return
-        _isLoadingComment.value = true
-        delay(1000)
-        _comments.clear()
-        _comments.addAll(
-            listOf(
-                Comment(
-                    id = "comment_1",
-                    tweetId = _tweetId.value,
-                    content = "C'est trop mignon !",
-                    user = User(
-                        id = "2",
-                        pseudo = "Bob",
-                        imageUri = imageTest,
-                    ),
-                    timestamp = System.currentTimeMillis() - 100 * 1000L,
-                    likesCount = 5,
-                    dislikesCount = 0,
-                ),
-                Comment(
-                    id = "comment_2",
-                    tweetId = _tweetId.value,
-                    content = "J'adore les chats !",
-                    user = User(
-                        id = "3",
-                        pseudo = "Charlie",
-                        imageUri = imageTest,
-                    ),
-                    timestamp = System.currentTimeMillis() - 50 * 1000L,
-                    likesCount = 3,
-                    dislikesCount = 1,
-                ),
-                Comment(
-                    id = "comment_3",
-                    tweetId = _tweetId.value,
-                    content = "Alice sub !",
-                    user = User(
-                        id = "1",
-                        pseudo = "Alice",
-                        imageUri = imageTest,
-                    ),
-                    timestamp = System.currentTimeMillis() - 50 * 1000L,
-                    likesCount = 3,
-                    dislikesCount = 1,
-                )
-            )
-        )
-        _hasFetchedComments.value = true
-        _isLoadingComment.value = false
+    fun fetchComments(tweetId: String? = _tweetId.value) {
+        if(tweetId == null){
+            _uiEvent.trySend(CommentUiEvent.Error("An error occurred: No tweet ID found."))
+            return
+        }
+        if(_state.value == CommentState.Success) return
+        _state.value = CommentState.Loading
+        tweetRepository.getComments(tweetId){result ->
+            when (result) {
+                is CommentResult.Success -> {
+                    _comments.clear()
+                    _comments.addAll(result.comments)
+                    _state.value = CommentState.Success
+                }
+                is CommentResult.Failure -> {
+                    _state.value = CommentState.Error
+                }
+            }
+        }
     }
 
     private fun addComment(comment: Comment?) {
@@ -254,15 +228,45 @@ class TweetDetailViewModel : ViewModel() {
         _comments[index] = updatedComment
     }
 
-    fun addComment(){
-        val comment = Comment(
-            id = "random_"+System.currentTimeMillis(),
-            tweetId = _tweetId.value,
-            content = _comment.value,
-            user = _tweet.value?.user!!,
-            timestamp = System.currentTimeMillis(),
-        )
-        SendGlobalEvent.onAddComment(_tweetId.value, comment)
-        setComment("")
+    fun addComment(tweetId: String? = _tweetId.value){
+        if(tweetId == null){
+            _uiEvent.trySend(CommentUiEvent.Error("An error occurred: No tweet ID found."))
+            return
+        }
+        tweetRepository.postComment(tweetId,_comment.value){result->
+            when(result){
+                is AddCommentResult.Success -> {
+                    _uiEvent.trySend(CommentUiEvent.Success(result.message))
+                    SendGlobalEvent.onAddComment(_tweetId.value, result.comment)
+                    setComment("")
+                }
+                is AddCommentResult.Failure -> {
+                    _uiEvent.trySend(CommentUiEvent.Error(result.message))
+                }
+            }
+        }
+
     }
+}
+
+sealed class CommentUiEvent {
+    data class Success(val message: String) : CommentUiEvent()
+    data class Error(val message: String) : CommentUiEvent()
+}
+
+sealed class AddCommentResult {
+    data class Success(val message: String,val comment:Comment) : AddCommentResult()
+    data class Failure(val message: String) : AddCommentResult()
+}
+
+sealed class CommentResult {
+    data class Success(val message: String, val comments:List<Comment>) : CommentResult()
+    data class Failure(val message: String) : CommentResult()
+}
+
+enum class CommentState {
+    Initial,
+    Loading,
+    Success,
+    Error
 }

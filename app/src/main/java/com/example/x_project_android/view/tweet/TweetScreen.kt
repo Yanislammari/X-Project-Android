@@ -211,9 +211,6 @@ fun TweetCell(
                     )
                     .background(Color.Gray),
                 contentScale = ContentScale.Crop,
-                onError = {
-                    Log.e("AsyncImage", "Image loading error: ${tweet.imageUri}")
-                },
             )
         }
         DisplayPseudo(tweet = tweet, user = tweet.user, onClick = onPseudoClick)

@@ -1,5 +1,6 @@
 package com.example.x_project_android.view.tweet
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -10,7 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
@@ -32,6 +33,8 @@ import com.example.x_project_android.event.SendGlobalEvent
 import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScreenDest
+import com.example.x_project_android.viewmodels.tweet.CommentState
+import com.example.x_project_android.viewmodels.tweet.CommentUiEvent
 import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailViewModel
 
@@ -43,6 +46,7 @@ fun TweetDetailScreen(
     sharedSubscribeViewModel: SharedSubscribeViewModel,
     origin : String = "default",
 ) {
+    val context = LocalContext.current
     LaunchedEffect(tweetDetailViewModel.tweetId.value) {
         if (tweetDetailViewModel.tweet.value == null) {
             if(sharedTweetViewModel.tweet == null){
@@ -53,6 +57,19 @@ fun TweetDetailScreen(
             }
         }
         tweetDetailViewModel.fetchComments()
+    }
+
+    LaunchedEffect(Unit){
+        tweetDetailViewModel.uiEvent.collect{event ->
+            when(event) {
+                is CommentUiEvent.Error -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+                is CommentUiEvent.Success -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     Scaffold { innerPadding ->
@@ -118,7 +135,7 @@ fun TweetDetailScreen(
                     )
                 }
             }
-            if(tweetDetailViewModel.isLoadingComment.value) {
+            if(tweetDetailViewModel.state.value == CommentState.Loading) {
                 item { DisplayLoader() }
             } else if(tweetDetailViewModel.comments.isEmpty()) {
                 item {
@@ -130,7 +147,18 @@ fun TweetDetailScreen(
                         textAlign = TextAlign.Center
                     )
                 }
-            } else {
+            } else if(tweetDetailViewModel.state.value == CommentState.Error) {
+                item {
+                    Text(
+                        stringResource(R.string.an_error_occurred_while_fetching_comments_please_try_again_later),
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+            else {
                 items(tweetDetailViewModel.comments.size) { index ->
                     val comment = tweetDetailViewModel.comments[index]
                     CommentCell(

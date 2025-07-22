@@ -28,10 +28,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -47,7 +47,10 @@ import androidx.navigation.NavHostController
 import coil3.compose.rememberAsyncImagePainter
 import com.example.x_project_android.R
 import com.example.x_project_android.utils.createImageUri
+import com.example.x_project_android.view.compose.DisplayLoader
+import com.example.x_project_android.viewmodels.tweet.AddTweetState
 import com.example.x_project_android.viewmodels.tweet.AddTweetViewModel
+import com.example.x_project_android.viewmodels.tweet.AddUiTweetEvent
 
 //Max = 1000
 //No image height
@@ -58,46 +61,69 @@ fun AddTweetScreen(
     addTweetViewModel: AddTweetViewModel
 ) {
     val context = LocalContext.current
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
-                .imePadding()
-        ) {
-            AddImage(
-                addTweetViewModel = addTweetViewModel,
-                context = context
-            )
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-            AddContent(
-                addTweetViewModel = addTweetViewModel,
-            )
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                enabled = addTweetViewModel.content.value.isNotBlank(),
-                shape = RoundedCornerShape(50.dp),
-                onClick = {
-                    addTweetViewModel.addTweet()
+
+    LaunchedEffect(Unit){
+        addTweetViewModel.uiEvent.collect { event ->
+            when (event) {
+                is AddUiTweetEvent.Error -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+                is AddUiTweetEvent.Success -> {
+                    Toast.makeText(context,
+                        context.getString(R.string.tweet_added_successfully), Toast.LENGTH_SHORT).show()
                     navHostController.navigateUp()
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    disabledContainerColor = MaterialTheme.colorScheme.secondary
-                )
-            ) {
-                Text(
-                    text = "Post",
-                )
+                }
             }
         }
     }
+
+    Scaffold { innerPadding ->
+        if(addTweetViewModel.state.value == AddTweetState.Loading) {
+            DisplayLoader()
+        }
+        else{
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
+            ) {
+                AddImage(
+                    addTweetViewModel = addTweetViewModel,
+                    context = context
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+                AddContent(
+                    addTweetViewModel = addTweetViewModel,
+                )
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    enabled = addTweetViewModel.content.value.isNotBlank(),
+                    shape = RoundedCornerShape(50.dp),
+                    onClick = {
+                        addTweetViewModel.addTweet(context)
+                        if(addTweetViewModel.state.value == AddTweetState.Success) {
+                            navHostController.navigateUp()
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Text(
+                        text = "Post",
+                    )
+                }
+            }
+        }
+        }
 }
 
 @Composable
