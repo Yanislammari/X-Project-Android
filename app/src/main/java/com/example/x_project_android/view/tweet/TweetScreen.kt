@@ -22,9 +22,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Create
@@ -34,11 +31,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,10 +47,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -75,6 +67,7 @@ import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScre
 import com.example.x_project_android.viewmodels.tweet.AddTweetScreenDest
 import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailScreenDest
+import com.example.x_project_android.viewmodels.tweet.TweetsState
 import com.example.x_project_android.viewmodels.tweet.TweetsViewModel
 
 @Composable
@@ -89,7 +82,6 @@ fun TweetScreen(
     LaunchedEffect(Unit){
         tweetsViewModel.fetchTweets()
     }
-
 
     Box(
         modifier = Modifier
@@ -116,14 +108,39 @@ fun TweetScreen(
                     .padding(8.dp),
             )
 
-            if (tweetsViewModel.isLoading.value) {
+            if (tweetsViewModel.state.value == TweetsState.Loading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     DisplayLoader()
                 }
-            } else {
+            }
+            else if(tweetsViewModel.state.value == TweetsState.Error){
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.an_error_occurred_while_fetching_tweets),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+            else if (tweetsViewModel.getTweetsBySearchValue().isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.no_tweets_found),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                }
+            }
+            else {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -193,7 +210,10 @@ fun TweetCell(
                         if (imageHeight != null) Modifier.height(imageHeight.dp) else Modifier
                     )
                     .background(Color.Gray),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                onError = {
+                    Log.e("AsyncImage", "Image loading error: ${tweet.imageUri}")
+                },
             )
         }
         DisplayPseudo(tweet = tweet, user = tweet.user, onClick = onPseudoClick)

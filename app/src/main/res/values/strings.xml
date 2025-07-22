@@ -47,4 +47,6 @@
     <string name="registration_successful_token_saved">Registration successful, token saved.</string>
     <string name="an_error_occurred_during_registration">An error occurred during registration.</string>
     <string name="request_failed_please_try_again_later">Request failed, please try again later.</string>
+    <string name="an_error_occurred_while_fetching_tweets">An error occurred while fetching tweets.</string>
+    <string name="no_tweets_found">No tweets found</string>
 </resources>

@@ -15,8 +15,8 @@ class LoginViewModel(
     private val _uiEvent = Channel<LoginUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
-    private var email by mutableStateOf("")
-    private var password by mutableStateOf("")
+    private var email by mutableStateOf("aaa@aaa.com")
+    private var password by mutableStateOf("aaa")
 
     fun onGetEmail(): String {
         return email
