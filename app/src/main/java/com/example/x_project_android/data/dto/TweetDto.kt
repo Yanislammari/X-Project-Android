@@ -9,9 +9,9 @@ data class TweetDto(
     val tweetPicture: String? = null,
     val user: UserDto? = null,
     val isLiked: Boolean = false,
-    val likesCount: Int = 0,
+    val likeCount: Int = 0,
     val isDisliked: Boolean = false,
-    val dislikesCount: Int = 0,
+    val dislikeCount: Int = 0,
     val timestamp : Long? = System.currentTimeMillis(),
     val isCommented: Boolean = false,
 )
@@ -23,9 +23,9 @@ fun TweetDto.toTweet(): Tweet {
         imageUri = this.tweetPicture,
         user = this.user?.toUser() ?: User(),
         isLiked = this.isLiked,
-        likesCount = this.likesCount,
+        likesCount = this.likeCount,
         isDisliked = this.isDisliked,
-        dislikesCount = this.dislikesCount,
+        dislikesCount = this.dislikeCount,
         timestamp = this.timestamp,
         isCommented = this.isCommented
     )

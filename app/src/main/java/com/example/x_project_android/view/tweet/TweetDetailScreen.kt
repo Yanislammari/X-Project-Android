@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.x_project_android.R
 import com.example.x_project_android.data.models.Comment
-import com.example.x_project_android.event.SendGlobalEvent
 import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScreenDest
@@ -95,8 +94,8 @@ fun TweetDetailScreen(
                                 navHostController.navigate(SubscriptionDetailScreenDest.ROUTE + "/${tweet.user.id}")
                             }
                         },
-                        onLike = { SendGlobalEvent.onLikeTweet(tweet.id) },
-                        onDislike = { SendGlobalEvent.onDislikeTweet(tweet.id) },
+                        onLike = { tweetDetailViewModel.sendLikeTweet(tweet.id) },
+                        onDislike = {tweetDetailViewModel.sendDislikeTweet(tweet.id) },
                     )
                 } ?: Text(
                     stringResource(R.string.tweetdetailscreen_error),
@@ -163,8 +162,8 @@ fun TweetDetailScreen(
                     val comment = tweetDetailViewModel.comments[index]
                     CommentCell(
                         comment = comment,
-                        onLike = { SendGlobalEvent.onLikeComment(comment.id)},
-                        onDislike = { SendGlobalEvent.onDislikeComment(comment.id) },
+                        onLike = { tweetDetailViewModel.sendLikeComment(comment.id)},
+                        onDislike = { tweetDetailViewModel.sendDislikeComment(comment.id) },
                         onPseudoClick = {
                             sharedSubscribeViewModel.setUserShared(comment.user)
                             navHostController.navigate(SubscriptionDetailScreenDest.ROUTE + "/${comment.user.id}")

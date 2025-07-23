@@ -14,8 +14,8 @@ data class CommentDto(
     val content: String? = null,
     val user: UserDto? = null,
     val timestamp: Long? = System.currentTimeMillis(),
-    val likesCount: Int = 0,
-    val dislikesCount: Int = 0,
+    val likeCount: Int = 0,
+    val dislikeCount: Int = 0,
     val isLiked: Boolean = false,
     val isDisliked: Boolean = false
 )
@@ -26,8 +26,8 @@ fun CommentDto.toComment() = Comment(
     content = content,
     user = user?.toUser() ?: UserDto().toUser(),
     timestamp = timestamp ?: System.currentTimeMillis(),
-    likesCount = likesCount,
-    dislikesCount = dislikesCount,
+    likesCount = likeCount,
+    dislikesCount = dislikeCount,
     isLiked = isLiked,
     isDisliked = isDisliked
 )

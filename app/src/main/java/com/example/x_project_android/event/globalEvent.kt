@@ -17,7 +17,7 @@ object GlobalEventBus {
 
 sealed class GlobalEvent {
     data class Unsubscribe(val userId: String) : GlobalEvent()
-    data class Subscribe(val user: User) : GlobalEvent()
+    data class Subscribe(val tweet: Tweet) : GlobalEvent()
     data class Like(val tweetId: String) : GlobalEvent()
     data class Dislike(val tweetId: String) : GlobalEvent()
     data class AddComment(val comment: Comment) : GlobalEvent()

@@ -31,9 +31,9 @@ object SendGlobalEvent {
         if (tweet == null) return
         GlobalEventBus.sendEvent(GlobalEvent.AddTweet(tweet))
     }
-    fun onSubscribe(user: User?) {
-        if (user == null) return
-        GlobalEventBus.sendEvent(GlobalEvent.Subscribe(user))
+    fun onSubscribe(tweet: Tweet?) {
+        if (tweet == null) return
+        GlobalEventBus.sendEvent(GlobalEvent.Subscribe(tweet))
     }
     fun onUnsubscribe(userId: String?) {
         if (userId.isNullOrEmpty()) return

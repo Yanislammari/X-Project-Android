@@ -2,6 +2,7 @@ package com.example.x_project_android.networking.services
 
 import com.example.x_project_android.data.dto.CommentDto
 import com.example.x_project_android.data.dto.PostCommentDto
+import com.example.x_project_android.data.dto.SubscribeDto
 import retrofit2.Call
 import com.example.x_project_android.data.dto.TweetDto
 import okhttp3.MultipartBody
@@ -17,6 +18,29 @@ import retrofit2.http.Path
 interface TweetService {
     @GET("tweets/tweets")
     fun getTweets(@Header("Authorization") authToken: String): Call<List<TweetDto>>
+
+    @GET("tweets/tweets/{userId}")
+    fun getTweetsForUser(
+        @Header("Authorization") authToken: String,
+        @Path("userId") userId: String
+    ): Call<List<TweetDto>>
+
+    @GET("subscribe/sub")
+    fun getAllSubscribes(
+        @Header("Authorization") authToken: String,
+    ): Call<List<TweetDto>>
+
+    @POST("subscribe/sub")
+    fun subscribeTo(
+        @Header("Authorization") authToken: String,
+        @Body subscribeDto: SubscribeDto,
+    ): Call<TweetDto>
+
+    @POST("subscribe/unsub")
+    fun unsubscribeFrom(
+        @Header("Authorization") authToken: String,
+        @Body subscribeDto: SubscribeDto,
+    ): Call<Void>
 
     @GET("comment/comments/{tweetId}")
     fun getCommentsForTweet(

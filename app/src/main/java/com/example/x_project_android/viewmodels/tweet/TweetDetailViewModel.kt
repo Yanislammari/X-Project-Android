@@ -11,6 +11,7 @@ import com.example.x_project_android.data.models.User
 import com.example.x_project_android.event.GlobalEvent
 import com.example.x_project_android.event.GlobalEventBus
 import com.example.x_project_android.event.SendGlobalEvent
+import com.example.x_project_android.repositories.LikeDislikeRepository
 import com.example.x_project_android.repositories.TweetRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -24,7 +25,8 @@ object TweetDetailScreenDest {
 }
 
 class TweetDetailViewModel(
-    private val tweetRepository: TweetRepository = TweetRepository()
+    private val tweetRepository: TweetRepository = TweetRepository(),
+    private val likeDislikeRepository: LikeDislikeRepository = LikeDislikeRepository()
 ) : ViewModel() {
 
     init {
@@ -245,7 +247,30 @@ class TweetDetailViewModel(
                 }
             }
         }
+    }
 
+    fun sendLikeTweet(tweetId: String? = _tweetId.value) {
+        if (tweetId == null) return
+        likeDislikeRepository.likeTweet(tweetId)
+        SendGlobalEvent.onLikeTweet(tweetId)
+    }
+
+    fun sendDislikeTweet(tweetId: String? = _tweetId.value) {
+        if (tweetId == null) return
+        likeDislikeRepository.dislikeTweet(tweetId)
+        SendGlobalEvent.onDislikeTweet(tweetId)
+    }
+
+    fun sendLikeComment(commentId: String?) {
+        if (commentId == null) return
+        likeDislikeRepository.likeComment(commentId)
+        SendGlobalEvent.onLikeComment(commentId)
+    }
+
+    fun sendDislikeComment(commentId: String?) {
+        if (commentId == null) return
+        likeDislikeRepository.dislikeComment(commentId)
+        SendGlobalEvent.onDislikeComment(commentId)
     }
 }
 

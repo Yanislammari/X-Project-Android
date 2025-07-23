@@ -3,6 +3,7 @@ package com.example.x_project_android.repositories
 import android.util.Log
 import com.example.x_project_android.data.dto.CommentDto
 import com.example.x_project_android.data.dto.PostCommentDto
+import com.example.x_project_android.data.dto.SubscribeDto
 import com.example.x_project_android.data.dto.TweetDto
 import com.example.x_project_android.data.dto.toComment
 import com.example.x_project_android.data.dto.toCommentList
@@ -12,6 +13,8 @@ import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.networking.RetrofitHttpClient
 import com.example.x_project_android.networking.services.TweetService
 import com.example.x_project_android.tokenStore.TokenManager
+import com.example.x_project_android.viewmodels.subscribe.SubscribeDetailResult
+import com.example.x_project_android.viewmodels.subscribe.SubscribeResult
 import com.example.x_project_android.viewmodels.toRequestBody
 import com.example.x_project_android.viewmodels.tweet.AddCommentResult
 import com.example.x_project_android.viewmodels.tweet.AddTweetResult
@@ -51,6 +54,65 @@ class TweetRepository {
 
             override fun onFailure(call: Call<List<TweetDto>>, t: Throwable) {
                 callback(TweetsResult.Failure("An error occurred while fetching tweets. Please try again later."))
+            }
+        })
+    }
+
+    fun getTweetsByUserId(userId: String,callback: (SubscribeDetailResult) -> Unit) {
+        if(TokenManager.getToken() == null) {
+            callback(SubscribeDetailResult.Failure("An error occurred: No token found. Please log in again."))
+            return
+        }
+        tweetService.getTweetsForUser(
+            authToken = TokenManager.getToken()!!,
+            userId = userId
+        ).enqueue(object : Callback<List<TweetDto>> {
+            override fun onResponse(call: Call<List<TweetDto>>, response: Response<List<TweetDto>>) {
+                if (response.isSuccessful && response.code() == 200){
+                    val tweetsDto = response.body()
+                    if (tweetsDto != null) {
+                        val tweets = tweetsDto.toTweetList()
+                        callback(SubscribeDetailResult.Success("Success",tweets))
+                    } else {
+                        val listTweet = emptyList<Tweet>()
+                        callback(SubscribeDetailResult.Success("No tweets found", listTweet))
+                    }
+                } else {
+                    callback(SubscribeDetailResult.Failure("An error occurred while fetching tweets. Please try again later."))
+                }
+            }
+
+            override fun onFailure(call: Call<List<TweetDto>>, t: Throwable) {
+                callback(SubscribeDetailResult.Failure("An error occurred while fetching tweets. Please try again later."))
+            }
+        })
+    }
+
+    fun getAllSub(callback: (SubscribeResult) -> Unit) {
+        if(TokenManager.getToken() == null) {
+            callback(SubscribeResult.Failure("An error occurred: No token found. Please log in again."))
+            return
+        }
+        tweetService.getAllSubscribes(
+            authToken = TokenManager.getToken()!!,
+        ).enqueue(object : Callback<List<TweetDto>> {
+            override fun onResponse(call: Call<List<TweetDto>>, response: Response<List<TweetDto>>) {
+                if (response.isSuccessful && response.code() == 200){
+                    val tweetsDto = response.body()
+                    if (tweetsDto != null) {
+                        val tweets = tweetsDto.toTweetList()
+                        callback(SubscribeResult.Success("Success",tweets))
+                    } else {
+                        val listTweet = emptyList<Tweet>()
+                        callback(SubscribeResult.Success("No tweets found", listTweet))
+                    }
+                } else {
+                    callback(SubscribeResult.Failure("An error occurred while fetching tweets. Please try again later."))
+                }
+            }
+
+            override fun onFailure(call: Call<List<TweetDto>>, t: Throwable) {
+                callback(SubscribeResult.Failure("An error occurred while fetching tweets. Please try again later."))
             }
         })
     }
@@ -150,6 +212,60 @@ class TweetRepository {
             override fun onFailure(call: Call<CommentDto>, t: Throwable) {
                 Log.d("TweetRepository", "Error posting comment: ${t.message}")
                 callback(AddCommentResult.Failure("An error occurred while posting comment. Please try again later."))
+            }
+        })
+    }
+
+    fun getTweetWhenSub(subToId:String,callback: (SubscribeDetailResult) -> Unit) {
+        if(TokenManager.getToken() == null) {
+            callback(SubscribeDetailResult.Failure("An error occurred: No token found. Please log in again."))
+            return
+        }
+        tweetService.subscribeTo(
+            authToken = TokenManager.getToken()!!,
+            subscribeDto = SubscribeDto(subToId)
+        ).enqueue(object : Callback<TweetDto> {
+            override fun onResponse(call: Call<TweetDto>, response: Response<TweetDto>) {
+                Log.d("TweetRepository", "Response code: ${response.code()}")
+                if (response.isSuccessful && response.code() == 201){
+                    val tweetDto = response.body()
+                    if (tweetDto != null) {
+                        val tweet = tweetDto.toTweet()
+                        callback(SubscribeDetailResult.SuccessSub("Success",tweet))
+                    } else {
+                        callback(SubscribeDetailResult.Failure("An error occurred while subing. Please try again later."))
+                    }
+                } else {
+                    callback(SubscribeDetailResult.Failure("An error occurred while subing. Please try again later."))
+                }
+            }
+
+            override fun onFailure(call: Call<TweetDto>, t: Throwable) {
+                Log.d("TweetRepository", "Error subscribing to tweet: ${t.message}")
+                callback(SubscribeDetailResult.Failure("An error occurred while subing. Please try again later."))
+            }
+        })
+    }
+
+    fun postUnsub(subToId: String,callback: (SubscribeDetailResult) -> Unit){
+        if(TokenManager.getToken() == null) {
+            callback(SubscribeDetailResult.Failure("An error occurred: No token found. Please log in again."))
+            return
+        }
+        tweetService.unsubscribeFrom(
+            authToken = TokenManager.getToken()!!,
+            subscribeDto = SubscribeDto(subToId)
+        ).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful && response.code() == 200){
+                    callback(SubscribeDetailResult.SuccessUnsub("Success"))
+                } else {
+                    callback(SubscribeDetailResult.Failure("An error occurred while unsubing. Please try again later."))
+                }
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                callback(SubscribeDetailResult.Failure("An error occurred while unsubing. Please try again later."))
             }
         })
     }

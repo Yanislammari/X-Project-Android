@@ -1,18 +1,20 @@
 package com.example.x_project_android.viewmodels.subscribe
 
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.x_project_android.data.models.Comment
 import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
 import com.example.x_project_android.event.GlobalEvent
 import com.example.x_project_android.event.GlobalEventBus
 import com.example.x_project_android.event.SendGlobalEvent
-import com.example.x_project_android.viewmodels.tweet.imageTest
+import com.example.x_project_android.repositories.LikeDislikeRepository
+import com.example.x_project_android.repositories.TweetRepository
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 object SubscriptionDetailScreenDest {
@@ -22,7 +24,10 @@ object SubscriptionDetailScreenDest {
     const val FULLROUTE = "$ROUTE/$USERIDPLACEHOLDER"
 }
 
-class SubscribeDetailViewModel: ViewModel() {
+class SubscribeDetailViewModel(
+    private val tweetRepository: TweetRepository = TweetRepository(),
+    private val likeDislikeRepository: LikeDislikeRepository = LikeDislikeRepository(),
+): ViewModel() {
 
     init {
         viewModelScope.launch {
@@ -37,7 +42,7 @@ class SubscribeDetailViewModel: ViewModel() {
             is GlobalEvent.Like -> likeTweet(event.tweetId)
             is GlobalEvent.Dislike -> dislikeTweet(event.tweetId)
             is GlobalEvent.Unsubscribe -> statusSubscribe(event.userId,false)
-            is GlobalEvent.Subscribe -> statusSubscribe(event.user.id,true)
+            is GlobalEvent.Subscribe -> statusSubscribe(event.tweet.user.id,true)
             else -> {}
         }
     }
@@ -51,10 +56,14 @@ class SubscribeDetailViewModel: ViewModel() {
     private var _tweetProfile = mutableStateListOf<Tweet>()
     val tweetProfile: List<Tweet> = _tweetProfile
 
-    private val _hasFetchedTweets = mutableStateOf(false)
+    private val _state = mutableStateOf(SubscribeDetailState.Initial)
+    val state: State<SubscribeDetailState> = _state
 
-    private val _isLoading = mutableStateOf(false)
-    val isLoading: State<Boolean> = _isLoading
+    private val _stateOfSub = mutableStateOf(SubscribeToState.Initial)
+    val stateOfSub: State<SubscribeToState> = _stateOfSub
+
+    private val _uiEvent = Channel<SubscribeDetailUiEvent>()
+    val uiEvent = _uiEvent.receiveAsFlow()
 
     private fun setUser(user: User?) {
         _userDetail.value = user
@@ -68,48 +77,26 @@ class SubscribeDetailViewModel: ViewModel() {
         setUser(user)
     }
 
-    suspend fun fetchTweetFromUserId(
+    fun fetchTweetFromUserId(
         userId: String,
     ) {
-        if(_hasFetchedTweets.value)return
-        _isLoading.value = true
-        kotlinx.coroutines.delay(500)
-        _tweetProfile.addAll(
-            listOf(
-                Tweet(
-                    id = "1",
-                    content = "Voici mon chat Miaou !",
-                    imageUri = imageTest,
-                    user = User(
-                        id = "1",
-                        pseudo = "Alice",
-                        imageUri = imageTest,
-                        bio = "J'adore les chats et les chiens !",
-                        isSubscribed = true,
-                    ),
-                    timestamp = System.currentTimeMillis() - 160 * 1000L,
-                    likesCount = 10,
-                    dislikesCount = 10,
-                ),
-                Tweet(
-                    id = "2",
-                    content = "Un tres long texte chiant a afffafhdjsjfjdsj...",
-                    imageUri = imageTest,
-                    user = User(
-                        id = "1",
-                        pseudo = "Alice",
-                        imageUri = imageTest,
-                        bio = "J'adore les chats et les chiens !",
-                        isSubscribed = true,
-                    ),
-                    timestamp = System.currentTimeMillis() - 360 * 60 * 1000L,
-                    likesCount = 10,
-                    dislikesCount = 10,
-                )
-            )
-        )
-        _hasFetchedTweets.value = true
-        _isLoading.value = false
+       if(_state.value == SubscribeDetailState.Success)return
+        _state.value = SubscribeDetailState.Loading
+       tweetRepository.getTweetsByUserId(userId){result->
+           when(result){
+               is SubscribeDetailResult.Success -> {
+                   _state.value = SubscribeDetailState.Success
+                   _tweetProfile.clear()
+                   _tweetProfile.addAll(result.tweets)
+               }
+               is SubscribeDetailResult.Failure -> {
+                   _state.value = SubscribeDetailState.Error
+               }
+               else -> {
+                   _state.value = SubscribeDetailState.Error
+               }
+           }
+       }
     }
 
     private fun statusSubscribe(userId : String?,state : Boolean) {
@@ -121,13 +108,51 @@ class SubscribeDetailViewModel: ViewModel() {
         )
     }
 
-    fun sendEventStateSub(){
-        if(_userDetail.value == null) return
-        if(_userDetail.value?.isSubscribed == true) {
-            SendGlobalEvent.onUnsubscribe(userId.value)
-        } else {
-            SendGlobalEvent.onSubscribe(_userDetail.value)
+    suspend fun sendEventStateSub(){
+        if(_userId.value == "" || _userDetail.value == null) return
+        _stateOfSub.value = SubscribeToState.Loading
+        delay(1000)
+        if(_userDetail.value?.isSubscribed == false) {
+            tweetRepository.getTweetWhenSub(_userId.value){ result ->
+                when(result){
+                    is SubscribeDetailResult.SuccessSub -> {
+                        _stateOfSub.value = SubscribeToState.Success
+                        SendGlobalEvent.onSubscribe(result.tweet)
+                        _uiEvent.trySend(SubscribeDetailUiEvent.Success("Subscribed successfully"))
+                    }
+                    else ->{
+                        _stateOfSub.value = SubscribeToState.Error
+                        _uiEvent.trySend(SubscribeDetailUiEvent.Error("An error occurred while subscribing"))
+                        setUserDetail(
+                            _userDetail.value?.copy(
+                                isSubscribed = false
+                            )
+                        )
+                    }
+                }
+            }
         }
+        else{
+            tweetRepository.postUnsub(_userId.value){ result ->
+                when(result){
+                    is SubscribeDetailResult.SuccessUnsub -> {
+                        _stateOfSub.value = SubscribeToState.Success
+                        SendGlobalEvent.onUnsubscribe(userId.value)
+                        _uiEvent.trySend(SubscribeDetailUiEvent.Success("Unsubscribed successfully"))
+                    }
+                    else ->{
+                        _stateOfSub.value = SubscribeToState.Error
+                        _uiEvent.trySend(SubscribeDetailUiEvent.Error("An error occurred while unsubscribing"))
+                        setUserDetail(
+                            _userDetail.value?.copy(
+                                isSubscribed = true
+                            )
+                        )
+                    }
+                }
+            }
+        }
+        SubscribeToState.Initial
     }
 
     private fun likeTweet(tweetId: String?){
@@ -165,4 +190,41 @@ class SubscribeDetailViewModel: ViewModel() {
         )
         _tweetProfile[index] = updatedTweet
     }
+
+    fun sendLikeTweet(tweetId : String?){
+        if(tweetId == null) return
+        likeDislikeRepository.likeTweet(tweetId)
+        SendGlobalEvent.onLikeTweet(tweetId)
+    }
+    fun sendDislikeTweet(tweetId : String?){
+        if(tweetId == null) return
+        likeDislikeRepository.dislikeTweet(tweetId)
+        SendGlobalEvent.onDislikeTweet(tweetId)
+    }
+}
+
+sealed class SubscribeDetailUiEvent {
+    data class Success(val message: String) : SubscribeDetailUiEvent()
+    data class Error(val message: String) : SubscribeDetailUiEvent()
+}
+
+sealed class SubscribeDetailResult {
+    data class Success(val message: String,val tweets:List<Tweet>) : SubscribeDetailResult()
+    data class SuccessSub(val message: String, val tweet: Tweet) : SubscribeDetailResult()
+    data class SuccessUnsub(val message: String) : SubscribeDetailResult()
+    data class Failure(val message: String) : SubscribeDetailResult()
+}
+
+enum class SubscribeDetailState {
+    Initial,
+    Loading,
+    Success,
+    Error
+}
+
+enum class SubscribeToState {
+    Initial,
+    Loading,
+    Success,
+    Error
 }

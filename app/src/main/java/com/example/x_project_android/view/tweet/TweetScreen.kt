@@ -56,7 +56,6 @@ import com.example.x_project_android.R
 import com.example.x_project_android.data.models.Comment
 import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
-import com.example.x_project_android.event.SendGlobalEvent
 import com.example.x_project_android.utils.getRelativeTime
 import com.example.x_project_android.utils.reduceText
 import com.example.x_project_android.view.compose.DisplayLoader
@@ -161,8 +160,12 @@ fun TweetScreen(
                                 sharedSubscribeViewModel.setUserShared(tweet.user)
                                 navHostController.navigate(SubscriptionDetailScreenDest.ROUTE + "/${tweet.user.id}")
                             },
-                            onLike = { SendGlobalEvent.onLikeTweet(tweet.id) },
-                            onDislike = { SendGlobalEvent.onDislikeTweet(tweet.id) }
+                            onLike = {
+                                tweetsViewModel.sendLike(tweet.id)
+                            },
+                            onDislike = {
+                                tweetsViewModel.sendDislike(tweet.id)
+                            }
                         )
                     }
                 }
@@ -255,6 +258,7 @@ fun DisplayPseudo(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
+        Log.d("DisplayPseudo", "User Image URI: ${user.imageUri}")
         AsyncImage(
             model = user.imageUri,
             contentDescription = stringResource(R.string.tweetscreen_image_content_desc),

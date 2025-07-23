@@ -51,4 +51,6 @@
     <string name="no_tweets_found">No tweets found</string>
     <string name="tweet_added_successfully">Tweet added successfully</string>
     <string name="an_error_occurred_while_fetching_comments_please_try_again_later">An error occurred while fetching comments. Please try again later.</string>
+    <string name="an_error_occurred_while_fetching_subscriptions">An error occurred while fetching subscriptions.</string>
+    <string name="an_error_occurred_while_fetching_tweets_2">An error occurred while fetching tweets.</string>
 </resources>

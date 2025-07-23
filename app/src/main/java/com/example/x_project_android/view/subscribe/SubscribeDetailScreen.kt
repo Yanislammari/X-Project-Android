@@ -1,6 +1,7 @@
 package com.example.x_project_android.view.subscribe
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,13 +46,15 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.x_project_android.R
 import com.example.x_project_android.data.models.User
-import com.example.x_project_android.event.SendGlobalEvent
 import com.example.x_project_android.utils.reduceText
 import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.view.compose.DisplayRoundImage
 import com.example.x_project_android.view.tweet.TweetCell
 import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
+import com.example.x_project_android.viewmodels.subscribe.SubscribeDetailState
+import com.example.x_project_android.viewmodels.subscribe.SubscribeDetailUiEvent
 import com.example.x_project_android.viewmodels.subscribe.SubscribeDetailViewModel
+import com.example.x_project_android.viewmodels.subscribe.SubscribeToState
 import com.example.x_project_android.viewmodels.tweet.SharedTweetViewModel
 import com.example.x_project_android.viewmodels.tweet.TweetDetailScreenDest
 import kotlinx.coroutines.launch
@@ -64,6 +68,7 @@ fun SubscribeDetailScreen(
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         if (subscribeDetailViewModel.userDetail.value == null) {
             if (sharedSubscribeViewModel.user == null) {
@@ -73,6 +78,21 @@ fun SubscribeDetailScreen(
             }
         }
         subscribeDetailViewModel.fetchTweetFromUserId(subscribeDetailViewModel.userId.value)
+    }
+
+    LaunchedEffect(Unit){
+        subscribeDetailViewModel.uiEvent.collect{event->
+            when(event){
+                is SubscribeDetailUiEvent.Error -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+                is SubscribeDetailUiEvent.Success -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+
+                }
+            }
+
+        }
     }
 
     Scaffold { innerPadding ->
@@ -88,14 +108,28 @@ fun SubscribeDetailScreen(
                 DisplayProfileDetail(
                     user = subscribeDetailViewModel.userDetail.value,
                     onClick = {
-                        subscribeDetailViewModel.sendEventStateSub()
-                    }
+                        coroutineScope.launch {
+                            subscribeDetailViewModel.sendEventStateSub()
+                        }
+                    },
+                    state = subscribeDetailViewModel.stateOfSub.value,
                 )
             }
             item {
-                if (subscribeDetailViewModel.isLoading.value) {
+                if (subscribeDetailViewModel.state.value == SubscribeDetailState.Loading) {
                     DisplayLoader()
-                } else if (subscribeDetailViewModel.tweetProfile.isEmpty()) {
+                }
+                else if (subscribeDetailViewModel.state.value == SubscribeDetailState.Error){
+                    Text(
+                        text = stringResource(R.string.an_error_occurred_while_fetching_tweets_2),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp), // padding above
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                else if (subscribeDetailViewModel.tweetProfile.isEmpty()) {
                     Text(
                         text = stringResource(R.string.subdetailscreen_error_no_tweet),
                         modifier = Modifier
@@ -120,8 +154,10 @@ fun SubscribeDetailScreen(
                                     listState.animateScrollToItem(0)
                                 }
                             },
-                            onLike = { SendGlobalEvent.onLikeTweet(tweet.id) },
-                            onDislike = { SendGlobalEvent.onDislikeTweet(tweet.id) },
+                            onLike = {
+                                subscribeDetailViewModel.sendLikeTweet(tweet.id)
+                            },
+                            onDislike = { subscribeDetailViewModel.sendDislikeTweet(tweet.id) },
                         )
                     }
                 }
@@ -136,7 +172,8 @@ fun SubscribeDetailScreen(
 @Composable
 fun DisplayProfileDetail(
     user: User?,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    state: SubscribeToState
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -190,7 +227,8 @@ fun DisplayProfileDetail(
         DisplayProfileImage(
             user = user,
             screenWidth = screenWidth,
-            onClick = onClick
+            onClick = onClick,
+            state = state,
         )
     }
 }
@@ -199,7 +237,8 @@ fun DisplayProfileDetail(
 fun DisplayProfileImage(
     user: User?,
     screenWidth: Dp,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    state: SubscribeToState
 ) {
     Column(
         horizontalAlignment = Alignment.Start,
@@ -216,15 +255,20 @@ fun DisplayProfileImage(
                 .width(screenWidth / 4)
                 .padding(bottom = 16.dp),
         )
-        Text(
-            text = if (user?.isSubscribed == true) "Unsubscribe" else "Subscribe",
-            color = if (user?.isSubscribed == true) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .clickable(
-                    onClick = onClick,
-                )
-        )
+        if(state == SubscribeToState.Loading){
+            DisplayLoader()
+        }
+        else{
+            Text(
+                text = if (user?.isSubscribed == true) "Unsubscribe" else "Subscribe",
+                color = if (user?.isSubscribed == true) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .clickable(
+                        onClick = onClick,
+                    )
+            )
+        }
     }
 }
 
@@ -293,6 +337,6 @@ fun DisplayProfilePreview() {
         isSubscribed = false
     )
 
-    DisplayProfileDetail(user = user, onClick = {})
+    DisplayProfileDetail(user = user, onClick = {}, state = SubscribeToState.Success)
 }
 

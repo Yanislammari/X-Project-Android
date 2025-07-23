@@ -10,10 +10,18 @@ import com.example.x_project_android.data.models.Tweet
 import com.example.x_project_android.data.models.User
 import com.example.x_project_android.event.GlobalEvent
 import com.example.x_project_android.event.GlobalEventBus
+import com.example.x_project_android.repositories.TweetRepository
+import com.example.x_project_android.tokenStore.TokenManager
+import com.example.x_project_android.viewmodels.tweet.AddTweetState
+import com.example.x_project_android.viewmodels.tweet.AddUiTweetEvent
 import com.example.x_project_android.viewmodels.tweet.imageTest
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class SubscribeViewModel : ViewModel() {
+class SubscribeViewModel(
+    private val tweetRepository: TweetRepository = TweetRepository()
+): ViewModel() {
 
     init {
         viewModelScope.launch {
@@ -25,7 +33,7 @@ class SubscribeViewModel : ViewModel() {
 
     private fun onEvent(event: GlobalEvent) {
         when (event) {
-            is GlobalEvent.Subscribe -> addWhenSubscribe(event.user)
+            is GlobalEvent.Subscribe -> addWhenSubscribe(event.tweet)
             is GlobalEvent.Unsubscribe -> deleteWhenUnsubscribe(event.userId)
             else -> {}
         }
@@ -35,68 +43,24 @@ class SubscribeViewModel : ViewModel() {
     private var _subscriptionsProfile = mutableStateListOf<Tweet>()
     val subscriptionsProfile: List<Tweet> = _subscriptionsProfile
 
-    private val _isLoading = mutableStateOf(false)
-    val isLoading: State<Boolean> = _isLoading
+    private val _state = mutableStateOf(SubscribeState.Initial)
+    val state: State<SubscribeState> = _state
 
-    private val _hasFetched = mutableStateOf(false)
+    fun fetchSubscriptions() {
+        if(_state.value == SubscribeState.Success) return
+        _state.value = SubscribeState.Loading
+        tweetRepository.getAllSub{ result ->
+            when (result) {
+                is SubscribeResult.Success -> {
+                    _subscriptionsProfile.addAll(result.tweets)
+                    _state.value = SubscribeState.Success
+                }
+                is SubscribeResult.Failure -> {
+                    _state.value = SubscribeState.Error
+                }
+            }
 
-    suspend fun fetchSubscriptions() {
-        if (_hasFetched.value) return
-        _isLoading.value = true
-        kotlinx.coroutines.delay(500)
-        _subscriptionsProfile.addAll(
-            listOf(
-                Tweet(
-                    id = "1",
-                    content = "Voici mon chat Miaou !",
-                    imageUri = imageTest,
-                    user = User(
-                        id = "1",
-                        pseudo = "Alice",
-                        imageUri = imageTest,
-                        bio = "J'adore les chats et les chiens long text sa mere en plus de ca!",
-                        isSubscribed = true,
-                    ),
-                    timestamp = System.currentTimeMillis() - 160 * 1000L,
-                    likesCount = 10,
-                    dislikesCount = 10,
-                ),
-                Tweet(
-                    id = "2",
-                    content = "Un tres long texte chiaUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaajUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjUn tres long texte chiant a afffafhdjsjfjdsjnt a afffafhdjsjfjdsjfdkjsjdsjkfkjdskjfdskjkjfdskjfdskjkjfdskjfkjfdjkfskjfkjdsjjfjfjfjfjfjjfjfjfjfjlfdfdjskfslkfd joiezfhouzehfoiezhfoi hezofhzeo fezof hezoih",
-
-                    user = User(
-                        id = "2",
-                        pseudo = "0123456789012345678901234",
-                        imageUri = imageTest,
-                        bio = "J'adore lesJ'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'ador et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'a et les chiens J'adore les chats et les chiens J'adore les chats et les chiens J'ae les chats et les chiens J'adore les chats et les chiens J'adore les chats et les chiens  chats et les chiens !",
-                        isSubscribed = true,
-                    ),
-                    timestamp = System.currentTimeMillis() - 360 * 60 * 1000L,
-                    likesCount = 10,
-                    dislikesCount = 10,
-                    isLiked = true,
-                ),
-                Tweet(
-                    id = "3",
-                    content = "Un tres long texte chiant a afffafhdjsjfjdsjfdkjsjdsjkfkjdskjfdskjkjfdskjfdskjkjfdskjfkjfdjkfskjfkjdsjjfjfjfjfjfjjfjfjfjfjlfdfdjskfslkfd joiezfhouzehfoiezhfoi hezofhzeo fezof hezoih",
-                    imageUri = imageTest,
-                    user = User(
-                        id = "3",
-                        bio = "01234567890123456789012345678901234567890123456789012345678",
-                        pseudo = "Exactemenf 25 charachter je le jure enfin je crois",
-                        imageUri = imageTest,
-                        isSubscribed = true,
-                    ),
-                    timestamp = System.currentTimeMillis() - 240 * 60 * 60 * 1000L,
-                    likesCount = 10,
-                    dislikesCount = 10,
-                    isDisliked = true,
-                )
-            )
-        )
-        _hasFetched.value = true
-        _isLoading.value = false
+        }
     }
 
     private fun deleteWhenUnsubscribe(userId: String?){
@@ -109,17 +73,21 @@ class SubscribeViewModel : ViewModel() {
         }
     }
 
-    private fun addWhenSubscribe(user: User?) {
-        if( user == null) return
-        if (_subscriptionsProfile.any { it.user.id == user.id }) return
-        _subscriptionsProfile.add(Tweet(
-            user = User(
-                id = user.id,
-                pseudo = user.pseudo,
-                imageUri = user.imageUri,
-                bio = user.bio,
-                isSubscribed = true
-            )
-        ))
+    private fun addWhenSubscribe(tweet: Tweet?) {
+        if( tweet == null) return
+        if (_subscriptionsProfile.any { it.user.id == tweet.user.id }) return
+        _subscriptionsProfile.add(tweet)
     }
+}
+
+sealed class SubscribeResult {
+    data class Success(val message: String,val tweets:List<Tweet>) : SubscribeResult()
+    data class Failure(val message: String) : SubscribeResult()
+}
+
+enum class SubscribeState {
+    Initial,
+    Loading,
+    Success,
+    Error
 }

@@ -6,7 +6,7 @@ data class UserDto(
     val id: String? = null,
     val pseudo: String? = null,
     val bio: String? = null,
-    val imageUri: String? = null,
+    val profilePicture: String? = null,
     val createdAt: Long? = null,
     val isSubscribed: Boolean = false,
 )
@@ -16,7 +16,7 @@ fun UserDto.toUser(): User {
         id = this.id,
         pseudo = this.pseudo,
         bio = this.bio,
-        imageUri = this.imageUri,
+        imageUri = this.profilePicture,
         createdAt = this.createdAt,
         isSubscribed = this.isSubscribed
     )

@@ -33,6 +33,7 @@ import com.example.x_project_android.view.compose.DisplayLoader
 import com.example.x_project_android.view.compose.DividerHorizontal
 import com.example.x_project_android.view.tweet.DisplayPseudo
 import com.example.x_project_android.viewmodels.subscribe.SharedSubscribeViewModel
+import com.example.x_project_android.viewmodels.subscribe.SubscribeState
 import com.example.x_project_android.viewmodels.subscribe.SubscribeViewModel
 import com.example.x_project_android.viewmodels.subscribe.SubscriptionDetailScreenDest
 import com.example.x_project_android.viewmodels.tweet.imageTest
@@ -65,7 +66,7 @@ fun SubscribeScreen(
                 .padding(8.dp)
         ) {
             item {
-                if (subscribeViewModel.isLoading.value) {
+                if (subscribeViewModel.state.value == SubscribeState.Loading) {
                     Box(
                         modifier = Modifier
                             .fillParentMaxSize(), // fills available space inside LazyColumn
@@ -74,10 +75,19 @@ fun SubscribeScreen(
                         DisplayLoader()
                     }
                 }
-            }
-
-            item {
-                if (!subscribeViewModel.isLoading.value && subscribeViewModel.subscriptionsProfile.isEmpty()) {
+                else if( subscribeViewModel.state.value == SubscribeState.Error) {
+                    Box(
+                        modifier = Modifier
+                            .fillParentMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            stringResource(R.string.an_error_occurred_while_fetching_subscriptions),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                else if(subscribeViewModel.subscriptionsProfile.isEmpty()){
                     Box(
                         modifier = Modifier
                             .fillParentMaxSize(),
@@ -90,6 +100,7 @@ fun SubscribeScreen(
                     }
                 }
             }
+
             items(subscribeViewModel.subscriptionsProfile) { tweet ->
                 SubscribeCell(
                     tweet = tweet,
